@@ -1,0 +1,99 @@
+[Wed Dec 18 02:10:45 2013] [info] Listening at "http://*:3000".
+[Wed Dec 18 02:11:01 2013] [debug] Your secret passphrase needs to be changed!!!
+[Wed Dec 18 02:11:01 2013] [debug] GET "/".
+[Wed Dec 18 02:11:01 2013] [error] Can't use string ("Graph::Screen") as a HASH ref while "strict refs" in use at c:/Perl64/site/lib/Mojolicious/Controller.pm line 360.
+
+[Wed Dec 18 02:11:01 2013] [debug] Template "exception.development.html.ep" not found.
+[Wed Dec 18 02:11:01 2013] [debug] Template "exception.html.ep" not found.
+[Wed Dec 18 02:11:01 2013] [debug] Rendering inline template.
+[Wed Dec 18 02:11:01 2013] [debug] Rendering inline template.
+[Wed Dec 18 02:11:01 2013] [debug] 500 Internal Server Error (0.301424s, 3.318/s).
+[Wed Dec 18 02:15:17 2013] [info] Listening at "http://*:3000".
+[Wed Dec 18 02:15:23 2013] [debug] Your secret passphrase needs to be changed!!!
+[Wed Dec 18 02:15:23 2013] [debug] GET "/".
+[Wed Dec 18 02:15:23 2013] [debug] Routing to controller "Graph::Screen" and action "newscreen".
+[Wed Dec 18 02:15:23 2013] [debug] Template "screen/newscreen.html.ep" not found.
+[Wed Dec 18 02:15:23 2013] [debug] Template "not_found.development.html.ep" not found.
+[Wed Dec 18 02:15:23 2013] [debug] Template "not_found.html.ep" not found.
+[Wed Dec 18 02:15:23 2013] [debug] Rendering inline template.
+[Wed Dec 18 02:15:23 2013] [debug] Rendering inline template.
+[Wed Dec 18 02:15:23 2013] [debug] 404 Not Found (0.071078s, 14.069/s).
+[Wed Dec 18 02:15:30 2013] [debug] GET "/".
+[Wed Dec 18 02:15:30 2013] [debug] Routing to controller "Graph::Screen" and action "newscreen".
+[Wed Dec 18 02:15:30 2013] [debug] Template "screen/newscreen.html.ep" not found.
+[Wed Dec 18 02:15:30 2013] [debug] Template "not_found.development.html.ep" not found.
+[Wed Dec 18 02:15:30 2013] [debug] Template "not_found.html.ep" not found.
+[Wed Dec 18 02:15:30 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:15:30 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:15:30 2013] [debug] 404 Not Found (0.049771s, 20.092/s).
+[Wed Dec 18 02:16:31 2013] [debug] GET "/".
+[Wed Dec 18 02:16:31 2013] [debug] Routing to controller "Graph::Screen" and action "newscreen".
+[Wed Dec 18 02:16:31 2013] [debug] Template "screen/newscreen.html.ep" not found.
+[Wed Dec 18 02:16:31 2013] [debug] Template "not_found.development.html.ep" not found.
+[Wed Dec 18 02:16:31 2013] [debug] Template "not_found.html.ep" not found.
+[Wed Dec 18 02:16:31 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:16:31 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:16:31 2013] [debug] 404 Not Found (0.048650s, 20.555/s).
+[Wed Dec 18 02:16:40 2013] [debug] GET "/dash/".
+[Wed Dec 18 02:16:40 2013] [debug] Routing to controller "Graph::Screen" and action "dash".
+[Wed Dec 18 02:16:40 2013] [debug] Template "screen/dash.html.ep" not found.
+[Wed Dec 18 02:16:40 2013] [debug] Template "not_found.development.html.ep" not found.
+[Wed Dec 18 02:16:40 2013] [debug] Template "not_found.html.ep" not found.
+[Wed Dec 18 02:16:40 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:16:40 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:16:40 2013] [debug] 404 Not Found (0.049469s, 20.215/s).
+[Wed Dec 18 02:18:20 2013] [debug] GET "/".
+[Wed Dec 18 02:18:20 2013] [debug] Routing to controller "Graph::Screen" and action "newscreen".
+[Wed Dec 18 02:18:20 2013] [debug] Rendering template "screen/newscreen.html.ep".
+[Wed Dec 18 02:18:20 2013] [debug] Rendering template "layouts/default.html.ep".
+[Wed Dec 18 02:18:20 2013] [debug] 200 OK (0.015953s, 62.684/s).
+[Wed Dec 18 02:18:29 2013] [debug] GET "/sdfs/dfsdf".
+[Wed Dec 18 02:18:29 2013] [debug] Template "not_found.development.html.ep" not found.
+[Wed Dec 18 02:18:29 2013] [debug] Template "not_found.html.ep" not found.
+[Wed Dec 18 02:18:29 2013] [debug] Rendering inline template.
+[Wed Dec 18 02:18:29 2013] [debug] Rendering inline template.
+[Wed Dec 18 02:18:29 2013] [debug] 404 Not Found (0.062870s, 15.906/s).
+[Wed Dec 18 02:18:44 2013] [debug] GET "/sdfs/view/".
+[Wed Dec 18 02:18:44 2013] [debug] Template "not_found.development.html.ep" not found.
+[Wed Dec 18 02:18:44 2013] [debug] Template "not_found.html.ep" not found.
+[Wed Dec 18 02:18:44 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:18:44 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:18:44 2013] [debug] 404 Not Found (0.047857s, 20.896/s).
+[Wed Dec 18 02:18:50 2013] [debug] GET "/sdfs/view".
+[Wed Dec 18 02:18:50 2013] [debug] Template "not_found.development.html.ep" not found.
+[Wed Dec 18 02:18:50 2013] [debug] Template "not_found.html.ep" not found.
+[Wed Dec 18 02:18:50 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:18:50 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:18:50 2013] [debug] 404 Not Found (0.048634s, 20.562/s).
+[Wed Dec 18 02:19:58 2013] [debug] GET "/sdfs/view".
+[Wed Dec 18 02:19:58 2013] [debug] Template "not_found.development.html.ep" not found.
+[Wed Dec 18 02:19:58 2013] [debug] Template "not_found.html.ep" not found.
+[Wed Dec 18 02:19:58 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:19:58 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:19:58 2013] [debug] 404 Not Found (0.048660s, 20.551/s).
+[Wed Dec 18 02:20:00 2013] [debug] GET "/sdfs/view".
+[Wed Dec 18 02:20:00 2013] [debug] Template "not_found.development.html.ep" not found.
+[Wed Dec 18 02:20:00 2013] [debug] Template "not_found.html.ep" not found.
+[Wed Dec 18 02:20:00 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:20:00 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:20:00 2013] [debug] 404 Not Found (0.047767s, 20.935/s).
+[Wed Dec 18 02:20:43 2013] [debug] GET "/sdfs/view".
+[Wed Dec 18 02:20:43 2013] [debug] Template "not_found.development.html.ep" not found.
+[Wed Dec 18 02:20:43 2013] [debug] Template "not_found.html.ep" not found.
+[Wed Dec 18 02:20:43 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:20:43 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:20:43 2013] [debug] 404 Not Found (0.047430s, 21.084/s).
+[Wed Dec 18 02:24:49 2013] [info] Listening at "http://*:3000".
+[Wed Dec 18 02:24:57 2013] [debug] Your secret passphrase needs to be changed!!!
+[Wed Dec 18 02:24:57 2013] [debug] GET "/sdfs/view".
+[Wed Dec 18 02:24:57 2013] [debug] Template "not_found.development.html.ep" not found.
+[Wed Dec 18 02:24:57 2013] [debug] Template "not_found.html.ep" not found.
+[Wed Dec 18 02:24:57 2013] [debug] Rendering inline template.
+[Wed Dec 18 02:24:57 2013] [debug] Rendering inline template.
+[Wed Dec 18 02:24:57 2013] [debug] 404 Not Found (0.070115s, 14.262/s).
+[Wed Dec 18 02:25:00 2013] [debug] GET "/sdfs/view".
+[Wed Dec 18 02:25:00 2013] [debug] Template "not_found.development.html.ep" not found.
+[Wed Dec 18 02:25:00 2013] [debug] Template "not_found.html.ep" not found.
+[Wed Dec 18 02:25:00 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:25:00 2013] [debug] Rendering cached inline template.
+[Wed Dec 18 02:25:00 2013] [debug] 404 Not Found (0.052296s, 19.122/s).
