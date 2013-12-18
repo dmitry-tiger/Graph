@@ -22,4 +22,10 @@ sub view {
   $self->render(msg => "Open screen $id with type $type ");
 }
 
+sub login{
+  my $self = shift;
+  my $id = $self->stash( 'server' );
+  $self->render(login_status => '1');
+}
+
 1;
