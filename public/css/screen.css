@@ -1,0 +1,191 @@
+/* CSS Document */
+body {
+	padding-top: 0px;
+}
+
+
+
+#container {
+	width:1300px;
+}
+
+
+#zabbix_server {
+
+}
+
+#maintenance_list {
+	position:relative;
+	padding-top:50px;
+}
+
+#maintenance_options {
+	position:relative;
+	padding-top:20px;
+}
+
+#group_list {
+}
+
+#host_list {
+	width: 300px;
+}
+
+#item_list {
+	width: 600px;
+}
+
+#hosts_in_maintenance {
+}
+
+#create_button{
+
+}
+
+#footer {
+}
+
+#hosts {
+  display: table-cell;
+  height: 360px;
+  width: 350px;
+  }
+#items {
+  display: table-cell;
+  height: 360px;
+  width: 700px;
+  /*margin-left: 30px;*/
+}
+/*#container {position:absolute; width:500px; top:100px;}*/
+#item_container {
+	margin-top: 20px;
+	position:relative;
+	/*width:500px;*/
+	/*top:100px;*/
+}
+#graph_options {
+	display: table-cell;
+	height: 360px;
+	width: 380px;
+}
+.drag{
+	position:relative;
+	cursor:default;
+	width: 700px;
+	z-index:1;
+	/*background-color: #EBEBEB;*/
+	}
+#workspace {
+	position:relative;
+	margin-top: 30px;
+/*	top:100px;*/
+	height:100%;
+	/*overflow:auto;*/
+	max-height:100%;
+	}
+	
+#graph_preview{
+	height: 300px;
+	width: 800px;
+/*	height:auto;
+	width: auto;*/
+	display: none;
+	}
+	
+#draw_string{
+position:relative;
+margin-top:20px;
+}
+
+.rem_item{
+	color: red;
+	float:right;
+	/*pointer-events: none;*/
+	/*position: relative;*/
+	/*left:300px;*/
+	/*cursor: pointer;*/
+}
+.select_color{
+        color: yellow;
+        float:right;
+         background: url(../img/select2.png);
+	top: 0;
+	right: 115px;
+	width: 20px;
+	height: 20px;
+	background-size: 20px 20px;
+	position: absolute;
+}
+
+.line_type{
+       position: absolute;
+       float:right;
+       right: 145px;
+}
+
+.ui-resizable-helper { border: 2px dotted #00F; }
+
+.field {
+	clear:both;
+	text-align:right;
+}
+label {
+	float:left;
+}
+
+.bar_name{
+	margin-bottom: 30px;
+}
+
+.graph_image {
+	max-height:100%;
+	max-width:100%;
+	width: auto;
+	height: auto;
+	display:block;
+}
+.resizeDiv{
+	max-height:100%;
+	max-width:100%;
+/*	width: auto;
+	height: auto;*/
+	width: 800px;
+	height: 600px;
+	display:block;
+}
+.closeImg{
+	position: absolute;
+	height: 25px;
+	width: 25px;
+	right: 4px;
+	top: 5px;
+}
+.editImg{
+	position: absolute;
+	height: 25px;
+	width: 25px;
+	right: 34px;
+	top: 5px;
+}
+.ProjectButtons{
+	float: right;
+	margin-right: 50px;
+}
+.fcolors{
+	float: right;
+	right: 20px;
+	position: absolute;
+}
+.axisinput{
+	display: none;
+	width: 80px;
+}
+#user_auth{
+	float: right;
+	margin-right: 50px;
+}
+#edit_panel{
+	margin-top: 20px;
+	display: none;
+	background-color: yellow;
+}
