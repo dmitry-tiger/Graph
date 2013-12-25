@@ -1,0 +1,160 @@
+<html>
+<head>
+<title>Graph tool :: <%= title %></title>
+%= stylesheet '/css/screen.css'
+%= stylesheet '/css/colorpicker.css'
+%= stylesheet 'http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css'
+%= stylesheet '/css/jquery.simple-dtpicker.css'
+
+%= javascript '/js/jquery-1.10.2.js'
+%= javascript 'http://code.jquery.com/ui/1.10.3/jquery-ui.js'
+%= javascript '/js/colorpicker.js'
+%= javascript '/js/jquery.simple-dtpicker.js'
+%= javascript '/js/graph.js'
+%= javascript '/js/jquery.blockUI.js'
+
+</head>
+<body>
+<div id="main" class="container">
+<div class="row">
+	<div id="previous_response"></div>
+		<input id="rm" type="hidden" name="rm" value="create">
+		<input id="screen_id" type="hidden" value="">
+		<input id="screen_name" type="hidden" value="">
+		<input id="onload" type="hidden" value="<%=$goonload%>">
+		<input id="maintenance_action" type="hidden" name="maintenance_action" value="">
+		<div id="user_auth">Signin
+			<input id="username" type="text" name="username" placeholder="Login">
+			<input id="password" type="password" name="password" placeholder="Password">
+			<input id="signin" class="btn" type="button" name="signin" value="Signin">
+		</div>
+		<div id="zabbix_server" class="btn-group">
+			<h4>Chose Zabbix server:</h4>
+% for my $zserver (@{$config->{zabbix}->{servers}}) {
+<input class="btn" type="button" name="zserver" value="<%= $zserver %>">
+% }
+
+<!--			<TMPL_LOOP NAME=ZSERVERS>
+				<input class="btn" type="button" name="zserver" value="<TMPL_VAR NAME=ZSERVER>">
+			</TMPL_LOOP>-->
+		</div>
+		<div id="zauth_result"></div><div id="busy" style="display: none;"><!--<img src="/img/ajax-loader.gif">--></div>
+
+		<div id="maintenance_options">
+
+
+			<div id="hosts">
+				
+				<div class="bar_name">Hosts:</div>
+				Host filter:<br><input type="text" name="host_filter_input"><br>
+				<!--<input type="button" value="Go!" name="filter_button">-->
+				(case insensitive regex)
+				<div>
+				<select id="host_list" name="host_list" multiple="multiple" size="15"> 
+				</select>
+				<!--<input id="add" type="button" value=" >> ">-->
+				<!--<input id="remove" type="button" value=" << ">-->
+				</div>
+				
+			</div>
+			<div id="items">
+				
+				<div class="bar_name">Items:</div>
+				Item filter:<br><input type="text" name="item_filter_input"><br>
+				<!--<input type="button" value="Go!" name="filter_button">-->
+				(case insensitive regex)
+				<div>
+				<select id="item_list" name="item_list" multiple="multiple" size="15"> 
+				</select>
+				<input id="add" type="button" value=" Add ">
+				<!--<input id="remove" type="button" value=" << ">-->
+				</div>
+				
+			</div>
+			<div id="graph_options">
+				<input type="hidden" name="edit_id" value="">
+				<div class="bar_name">Options:</div>
+				<div class="field">
+				<label>Graph type:</label>
+					<select name="graph_type">
+						<option value=0>Normal</option>
+						<option value=1>Stacked</option>
+					</select>
+					<br>
+				</div>
+				<div class="field">
+				<label>Graph title:</label> <input type="text" name="graph_name" value="" placeholder="My Preffered Graph"><br>
+				</div>
+				<div class="field">
+				<label>Graph height:</label> <input type="text" name="graph_height" value="300"><br>
+				</div>
+				<div class="field">
+				<label>Graph width:</label> <input type="text" name="graph_width" value="800"><br>
+				</div>
+				<div class="field">
+				<label>Start date/time:</label> <input type="text" name="graph_date"><br>
+				</div>
+				<div class="field">
+				<label>Data period(hours):</label> <input type="text" name="graph_period" value="3"><br>
+				</div>
+				<div class="field">
+				<label>Y axis min:</label>
+					<select name="graph_yaxismin" autocomplete="off">
+						<option value=0 selected="selected">Calculated</option>
+						<option value=1>Fixed</option>
+					</select>
+					<input name="yaxismin" class="axisinput" value="0">
+					<br>
+				</div>
+				<div class="field">
+				<label>Y axis max:</label>
+					<select name="graph_yaxismax" autocomplete="off">
+						<option value=0 selected="selected">Calculated</option>
+						<option value=1>Fixed</option>
+					</select>
+					<input name="yaxismax" class="axisinput" value="100">
+					<br>
+					
+				</div>
+				<div class="field">
+				<label>Show legend:</label> <input type="checkbox" name="graph_legend" checked="true"><br>
+				</div>
+				<div class="field">
+				<label>Show triggers:</label> <input type="checkbox" name="graph_triggers" checked="true"><br>
+				</div>
+				<script type="text/javascript">
+					$(function(){
+						$('*[name=graph_date]').appendDtpicker();
+						$('*[name=graph_date]').val("");
+					});
+				</script>
+				
+			</div>
+		</div>
+
+</div>
+<strong>Graph items(drag to change order):<br></strong>
+	<div id="item_container">
+	</div>
+</div>
+<div id="edit_panel">
+	<input id="save_graph" type="button" value="Save graph">&nbsp;
+	<input id="cancel_edit" type="button" value="Cancel edit">&nbsp;
+</div>
+<div id="draw_string">
+	<input id="draw" type="button" value="Add to WorkSpace">&nbsp;
+	<input id="show_url" type="button" value="Get graph URL">&nbsp;
+	<input id="itemlist_clear" type="button" value="Clear list">&nbsp;
+	<input id="do_graph_preview" type="button" value="Graph preview">
+	<span class="ProjectButtons">
+		<input type="text" id="project_name" placeholder="My Project Name">
+		<input id="project_save" type="button" value="Save Project">&nbsp;
+		<input id="project_fork" type="button" value="Fork Project" disabled=true>&nbsp;
+		<input id="project_remove" type="button" value="Remove Project" disabled=true>
+	</span>
+</div>
+<div id="graph_preview"></div>
+<div id="workspace"></div>
+</body>
+</html>
+
