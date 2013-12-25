@@ -207,7 +207,7 @@ $(document).ready(function() {
 //	graph_url=graph_url.replace(/"/g, '&quot;');
 //	graph_url=graph_url.replace(/\+/g, '%2b');
 	$('<div class="resizeDiv" id="GraphImg'+ImgId+'"><input type=hidden name="graph_url" value="'+graph_url+'"><img class="graph_image" src="'+graph_url+
-	  '"><img class="editImg image_buttons" src="img/edit.png"><img class="closeImg image_buttons" src="img/close.png"></div>').appendTo('#workspace').draggable({ snap: true, cancel:".image_buttons"})
+	  '"><img class="editImg image_buttons" src="/img/edit.png"><img class="closeImg image_buttons" src="/img/close.png"></div>').appendTo('#workspace').draggable({ snap: true, cancel:".image_buttons"})
 	.find("img.graph_image")
 	.load(function (){
 	    $(this).parent().css({width:this.width,height:this.height});
@@ -217,7 +217,7 @@ $(document).ready(function() {
 	    addImageCallBacks($(this).parent());
 	})
 	.parent().block({ 
-	    message: '<h3>Loading image...</h3><span><img class="closeImg image_buttons" src="img/close.png"></span>', 
+	    message: '<h3>Loading image...</h3><span><img class="closeImg image_buttons" src="/img/close.png"></span>', 
 	    css: { border: '3px solid #a00' } 
 	});
 	ImgId++;
@@ -808,11 +808,41 @@ $(document).ready(function() {
     
     function FetchScreen(url){
 	alert("Fetch "+url);
-	$.ajax({url:"/zlogin/"+server_name,
+	$.ajax({url:"/"+url+"/fetch/",
 	    dataType: 'json',
 	    async: false,
 	    success: function(data){
-	    $("#zauth_result").html(data);
+		if (data['error']==1) {
+		    alert("Save error: "+data['error_str']);
+		}	
+		else{
+		    document.title = "Graph tool :: "+data['scr_name'];
+		    $('#screen_name').val(data['scr_name']);
+		    $('#screen_id').val(url);
+		    $.each(data['data'], function(key,val) {
+				myheight=data['data'][key]['height'];
+				mywidth=data['data'][key]['width'];
+				myleft=data['data'][key]['left'];
+				mytop=data['data'][key]['top'];
+				myurl=data['data'][key]['url'];
+				
+$('<div class="resizeDiv" id="GraphImg'+ImgId+'"><input type=hidden name="graph_url" value="'+myurl+'"><img class="graph_image" src="'+myurl+
+'"><img class="editImg image_buttons" src="/img/edit.png"><img class="closeImg image_buttons" src="/img/close.png"></div>').appendTo('#workspace').draggable({ snap: true, cancel:".image_buttons"})
+.find("img.graph_image")
+.load(function (){
+    $(this).parent().css({width:mywidth,height:myheight,left:myleft,top:mytop});
+    $(this).parent().resizable({helper: "ui-resizable-helper"});
+    $(this).css({width:"100%",height:"100%"});
+    $(this).parent().unblock();
+    addImageCallBacks($(this).parent());
+})
+.parent().block({ 
+    message: '<h3>Loading image...</h3><span><img class="closeImg image_buttons" src="/img/close.png"></span>', 
+    css: { border: '3px solid #a00' } 
+});
+ImgId++;				
+		    });	
+		}
 	    }
 	});
     }
