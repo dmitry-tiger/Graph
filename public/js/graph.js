@@ -6,7 +6,8 @@ $(document).ready(function() {
     var KnownItems = [];
     var CurServer = "";
     var ImgId=0;
-	
+    var login_semaphore  = 0;
+    var async;
     $(document).ajaxStop($.unblockUI);         
     $.ajaxSetup({
         beforeSend:function(){
@@ -18,7 +19,8 @@ $(document).ready(function() {
             // hide image here
 //            $("#busy").hide();
 	    $.unblockUI;
-        }
+        },
+//	async: false,
     });
     $.cssHooks.backgroundColor = {
 	get: function(elem) {
@@ -38,39 +40,72 @@ $(document).ready(function() {
             }
         }
     }
-    if ($("#previous_response").html() == "0") { 
+    if ($("#previous_response").html() == "0 ") { 
 	$("#previous_response").removeClass("text-error").addClass("text-success");
 	$("#previous_response").html("Completed Successfully");
     } 
-    if ($("#previous_response").html() == "1") { 
+    if ($("#previous_response").html() == "1 ") { 
 	$("#previous_response").removeClass("text-success").addClass("text-error");
 	$("#previous_response").html("Something wrong, check log");
     }
  
-    function ZabServerLoad(server_name) {
-	CurServer = server_name;	
-	$("#zauth_result").load("graphs.cgi", {rm:"ajax_login_to_zabbix", zserver:server_name}, function() { 
-	    if ( $("#zauth_result").html() == "0" ) {
-		$("#zauth_result").removeClass("text-error").addClass("text-success");
-		$("#zauth_result").html("Zabbix authentication success, "+CurServer+" server selected");
-	    }
-	    if ( $("#zauth_result").html() == "1" ) {
-	        $("#zauth_result").removeClass("text-success").addClass("text-error");
-	        $("#zauth_result").html("Zabbix authentication failed, ask MT ;)");
-	    }
-		
-	    $.getJSON("graphs.cgi", {rm:"ajax_get_all_hosts"}, function(data) {
-		AllHosts = data;
-		AllHosts_rev = {};
-		$.each(AllHosts, function(key,val) {
-		    AllHosts_rev[val]= key;
-		});
-		SelectedItems = [];
-		$("#item_list").empty();
-		filter_host($('input[name=host_filter_input]').val());
-	    });
-        });
+    function ZabServerLoad(server_name,param) {
+	CurServer = server_name;
+	login_semaphore=1;
 	$('#item_container').empty();
+	//$("#zauth_result").load("/zlogin/"+server_name, function() { 
+	//    if (parseInt($("#zauth_result").html()) == 0 ) {
+	//	$("#zauth_result").removeClass("text-error").addClass("text-success");
+	//	$("#zauth_result").html("Zabbix authentication success, "+CurServer+" server selected");
+	//    }
+	//    if (parseInt($("#zauth_result").html()) == 1 ) {
+	//        $("#zauth_result").removeClass("text-success").addClass("text-error");
+	//        $("#zauth_result").html("Zabbix authentication failed, ask MT ;)");
+	//    }
+	
+	$.ajax({url:"/zlogin/"+server_name,
+	        dataType: 'json',
+		async: false,
+  		success: function(data){
+		    $("#zauth_result").html(data);
+		}
+	});
+	
+	    if (param != "noloadhosts") {
+		//$.getJSON("do/ajax_get_all_hosts/", function(data) {
+		//    AllHosts = data;
+		//    AllHosts_rev = {};
+		//    $.each(AllHosts, function(key,val) {
+		//	AllHosts_rev[val]= key;
+		//    });
+		//    login_semaphore=0;
+		//    SelectedItems = [];
+		//    $("#item_list").empty();
+		//    filter_host($('input[name=host_filter_input]').val());
+		//});
+		$.ajax({url:"do/ajax_get_all_hosts/",
+		        dataType: 'json',
+			async: false,
+  		        success: function(data){
+			    AllHosts = data;
+			    AllHosts_rev = {};
+			    $.each(AllHosts, function(key,val) {
+				AllHosts_rev[val]= key;
+			    });
+			    login_semaphore=0;
+			    SelectedItems = [];
+			    $("#item_list").empty();
+			    filter_host($('input[name=host_filter_input]').val());
+			}
+		});
+//		
+//		
+//	    }
+//	 
+//        });
+	//while (login_semaphore == 1) {
+	//    sleep(100);
+	}
     }
         
         //$('input[name=filter_button]').click(function() {
@@ -109,7 +144,7 @@ $(document).ready(function() {
             var hostId = hosts[i];
 	    hostIds.push(hostId);
         };
-        $.getJSON("graphs.cgi", {rm:"ajax_get_items",hostids:hostIds}, function(data) {
+        $.getJSON("/do/ajax_get_items", {hostids:hostIds}, function(data) {
 	    //SelectedItems = data;
 	    SelectedItems=data;
 //		KnownItems.extend(data);
@@ -172,7 +207,7 @@ $(document).ready(function() {
 //	graph_url=graph_url.replace(/"/g, '&quot;');
 //	graph_url=graph_url.replace(/\+/g, '%2b');
 	$('<div class="resizeDiv" id="GraphImg'+ImgId+'"><input type=hidden name="graph_url" value="'+graph_url+'"><img class="graph_image" src="'+graph_url+
-	  '"><img class="editImg image_buttons" src="bootstrap/img/edit.png"><img class="closeImg image_buttons" src="bootstrap/img/close.png"></div>').appendTo('#workspace').draggable({ snap: true, cancel:".image_buttons"})
+	  '"><img class="editImg image_buttons" src="img/edit.png"><img class="closeImg image_buttons" src="img/close.png"></div>').appendTo('#workspace').draggable({ snap: true, cancel:".image_buttons"})
 	.find("img.graph_image")
 	.load(function (){
 	    $(this).parent().css({width:this.width,height:this.height});
@@ -182,7 +217,7 @@ $(document).ready(function() {
 	    addImageCallBacks($(this).parent());
 	})
 	.parent().block({ 
-	    message: '<h3>Loading image...</h3><span><img class="closeImg image_buttons" src="bootstrap/img/close.png"></span>', 
+	    message: '<h3>Loading image...</h3><span><img class="closeImg image_buttons" src="img/close.png"></span>', 
 	    css: { border: '3px solid #a00' } 
 	});
 	ImgId++;
@@ -441,7 +476,7 @@ $(document).ready(function() {
 	}
 	if($(e.target).is("input[name=zserver]")) {
 	    var zserver = $(e.target).val();
-	     ZabServerLoad (zserver);
+	     ZabServerLoad (zserver,"");
 	}
 	if($(e.target).is("#itemlist_clear")) {
 	    $('#item_container').empty();
@@ -486,6 +521,12 @@ $(document).ready(function() {
 		    $(e.target).css('backgroundColor', '#' + hex);
 		}    
 	    });
+	}
+	if($(e.target).is("#project_save")){
+	    project_save('save');
+	}
+	if($(e.target).is("#project_fork")){
+	    project_save('fork');
 	}
     });
     
@@ -552,7 +593,6 @@ $(document).ready(function() {
 	   split_arr=param_pairs[key].match(/([^=]+)=(.*)/);
 	   param_pair.push([split_arr[1],split_arr[2]]);
 	}
-	ZabServerLoad(zbx_srv);
 	for (var i in param_pair) {
 	    switch (param_pair[i][0]) {
 		//case "host[]":
@@ -656,12 +696,27 @@ $(document).ready(function() {
 	else {
 	    $('input[name=graph_triggers]').prop("checked",false);
 	}
-	LoadGraphItemList(items,colors,drawtypes);
+	//async=$.getJSON("do/ajax_get_all_hosts/", function(data) {
+	//	    AllHosts = data;
+	//	    AllHosts_rev = {};
+	//	    $.each(AllHosts, function(key,val) {
+	//		AllHosts_rev[val]= key;
+	//	    });
+	//	    login_semaphore=0;
+	//	    SelectedItems = [];
+	//	    $("#item_list").empty();
+	//	    filter_host($('input[name=host_filter_input]').val());
+	//	});
+//	$.when(async).done(function(){
+	ZabServerLoad(zbx_srv,"noloadhosts");
+	//ZabServerLoad(zbx_srv,"noloadhosts");
+	    LoadGraphItemList(items,colors,drawtypes);
+//	    });
 	$("#edit_panel").css({"display":"block"});
     };
     
     function LoadGraphItemList(gr_items,gr_colors,gr_drawtypes) {
-	$.getJSON("graphs.cgi", {rm:"ajax_get_items_by_itemids",itemids:gr_items}, function(data) {
+	$.getJSON("/do/ajax_get_items_by_itemids", {itemids:gr_items}, function(data) {
 	    SelectedItems=data;
 	    KnownItems = $.extend({}, KnownItems, data);
 	    var myRe = /\$(\d)/ig;
@@ -686,5 +741,83 @@ $(document).ready(function() {
 	
     }
     
+    //$('#project_save').click(function()
+    function project_save(type){
+	var item_arr = [];
+	$('#workspace .resizeDiv').each(function(index){
+	    item_width=$(this).css('width');
+	    item_heigth=$(this).css('height');
+	    item_left=$(this).css('left');
+	    item_top=$(this).css('top');
+	    item_img=$(this).find('input[name=graph_url]').val();
+//	    item_img=$(this).find("img .graph_image").attr('src');
+	    item_arr.push({'item_width':item_width,'item_heigth':item_heigth,'item_left':item_left,'item_top':item_top,'item_img':item_img});
+	});
+	var project_name = "";
+	if ($('#project_name').val()=="") {
+	    project_name = $('#screen_name').val();
+	}
+	else{
+	    project_name=$('#project_name').val();
+	}
+	data = {'screen_name':project_name,'screen_id':$('#screen_id').val(),'data':item_arr};
+	data_json = JSON.stringify(data);
+	if (type=='save') {
+	    $.ajax({
+		type: "POST",
+		url: "/do/save",
+		data:data_json,
+		success: onSaveSuccess,
+		dataType: 'json'
+	    });
+	}
+	else if (type=='fork') {
+	    $.ajax({
+		type: "POST",
+		url: "/do/fork",
+		data:data_json,
+		success: onForkSuccess,
+		dataType: 'json'
+	    });	
+	}
+	else{
+	    alert("Something wrong!!!");
+	}
+    };
     
+    function onForkSuccess(data){
+ 	alert(data);
+    }
+    function onSaveSuccess(data){
+	if (data['error']==1) {
+	    alert("Save error: "+data['error_str']);
+	}
+	else{
+	    if ($('#screen_id').val() == data['screen_id']) {
+		alert("Screen saved");
+		$('#screen_name').val(data['screen_name']);
+		document.title = "Graph tool :: "+data['screen_name'];
+	    }
+	    else {
+		alert("Page should be reloaded with new token...");
+		window.location = "/"+data['screen_id']+"/view/";
+//		$(location).attr('href',url);
+	    }
+	}
+    }
+    
+    function FetchScreen(url){
+	alert("Fetch "+url);
+	$.ajax({url:"/zlogin/"+server_name,
+	    dataType: 'json',
+	    async: false,
+	    success: function(data){
+	    $("#zauth_result").html(data);
+	    }
+	});
+    }
+    
+    if ($('#onload').val()!="none") {
+	FetchScreen($('#onload').val());
+    }
 });
