@@ -19,7 +19,7 @@ sub dash {
 sub fetch {
   my $self = shift;
   my $id = $self->stash( 'id' );
-  
+  my @data;
   ###################
   my $userid=1;
   ###################
@@ -36,13 +36,25 @@ sub fetch {
     $self->render(json => {"error"=>"1","error_str"=>"View doesn't exists" });
     return 0;
   }
-  
-  
-  
-  
-  
+  my $ref = $sth->fetchrow_hashref();
+  my $scr_id = $ref->{'screenid'};
+  my $scr_name = $ref->{'screenname'};
+  my $scr_user = $ref->{'username'};
+  $sth = $self->db->prepare("SELECT `width`,`height`,`top`,`left`,`url` FROM graphs where screenid='$scr_id'") 
+  or do {
+    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+    return 0;
+  };
+  $sth->execute or do {
+    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+    return 0;
+  };
+  while ($ref=$sth->fetchrow_hashref()) {
+    push @data,{'width'=>$ref->{'width'},'height'=>$ref->{'height'},'top'=>$ref->{'top'},'left'=>$ref->{'left'},'url'=>$ref->{'url'}};
+  }
   # Render template "example/welcome.html.ep" with message
-  $self->render(json => {"error"=>"0","error_str"=>"", "screen_id" => $url, "screen_name" => $project_name });
+  $self->render(json => {"error"=>"0","error_str"=>"", "scr_name" => $scr_name, "scr_user" => $scr_user, "data" => \@data});
+  return 1;
 }
 
 sub view{
