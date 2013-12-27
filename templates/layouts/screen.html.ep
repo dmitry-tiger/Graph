@@ -1,17 +1,18 @@
 <html>
 <head>
 <title>Graph tool :: <%= title %></title>
-%= stylesheet '/css/screen.css'
 %= stylesheet '/css/colorpicker.css'
-%= stylesheet 'http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css'
 %= stylesheet '/css/jquery.simple-dtpicker.css'
+%= stylesheet 'http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/smoothness/jquery-ui.css'
+%= stylesheet '/css/screen.css'
 
-%= javascript '/js/jquery-1.10.2.js'
-%= javascript 'http://code.jquery.com/ui/1.10.3/jquery-ui.js'
+%= javascript 'http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js'
+%= javascript 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js'
 %= javascript '/js/colorpicker.js'
 %= javascript '/js/jquery.simple-dtpicker.js'
-%= javascript '/js/graph.js'
 %= javascript '/js/jquery.blockUI.js'
+%= javascript '/js/graph.js'
+
 
 </head>
 <body>
@@ -20,6 +21,7 @@
 	<div id="previous_response"></div>
 		<input id="rm" type="hidden" name="rm" value="create">
 		<input id="screen_id" type="hidden" value="">
+		<input id="screen_type" type="hidden" value="view">
 		<input id="screen_name" type="hidden" value="">
 		<input id="onload" type="hidden" value="<%=$goonload%>">
 		<input id="maintenance_action" type="hidden" name="maintenance_action" value="">
@@ -150,7 +152,9 @@
 		<input type="text" id="project_name" placeholder="My Project Name">
 		<input id="project_save" type="button" value="Save Project">&nbsp;
 		<input id="project_fork" type="button" value="Fork Project" disabled=true>&nbsp;
-		<input id="project_remove" type="button" value="Remove Project" disabled=true>
+		<input id="project_new" type="button" value="New Project">&nbsp;
+		<input id="project_delete" type="button" value="Delete Project" disabled=true>&nbsp;
+		<input id="dash_view" type="button" value="View on dash" disabled=true>
 	</span>
 </div>
 <div id="graph_preview"></div>
