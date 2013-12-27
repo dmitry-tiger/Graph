@@ -8,7 +8,9 @@ $(document).ready(function() {
     var ImgId=0;
     var login_semaphore  = 0;
     var async;
-    $(document).ajaxStop($.unblockUI);         
+    $(document).ajaxStop($.unblockUI);
+
+//    $(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
     $.ajaxSetup({
         beforeSend:function(){
 	$.blockUI({ message: '<h3> Loading data...</h3>' });     
@@ -40,13 +42,32 @@ $(document).ready(function() {
             }
         }
     }
-    if ($("#previous_response").html() == "0 ") { 
+    if ($("#previous_response").html() == "0") { 
 	$("#previous_response").removeClass("text-error").addClass("text-success");
 	$("#previous_response").html("Completed Successfully");
     } 
-    if ($("#previous_response").html() == "1 ") { 
+    if ($("#previous_response").html() == "1") { 
 	$("#previous_response").removeClass("text-success").addClass("text-error");
 	$("#previous_response").html("Something wrong, check log");
+    }
+ 
+    function showLoadingScreen()
+    {
+	//include block.js for using this
+	$.blockUI({ 
+	    message: 'Loading....',
+	    css: { 
+		border: 'none',
+		width: '300px', 
+		height: '50px',
+		padding: '15px',
+		backgroundColor: '#000', 
+		'-webkit-border-radius': '10px', 
+		'-moz-border-radius': '10px', 
+		opacity: .5, 
+		color: '#fff'
+	    }       
+	}); 
     }
  
     function ZabServerLoad(server_name,param) {
@@ -62,12 +83,21 @@ $(document).ready(function() {
 	//        $("#zauth_result").removeClass("text-success").addClass("text-error");
 	//        $("#zauth_result").html("Zabbix authentication failed, ask MT ;)");
 	//    }
-	
+//	$.blockUI({ message: '<h3> Loading data...</h3>' });     
 	$.ajax({url:"/zlogin/"+server_name,
 	        dataType: 'json',
 		async: false,
   		success: function(data){
 		    $("#zauth_result").html(data);
+		    if (parseInt($("#zauth_result").html()) == 0 ) {
+			$("#zauth_result").removeClass("text-error").addClass("text-success");
+			$("#zauth_result").html("Zabbix authentication success, "+CurServer+" server selected");
+		    }
+		    if (parseInt($("#zauth_result").html()) == 1 ) {
+		        $("#zauth_result").removeClass("text-success").addClass("text-error");
+		        $("#zauth_result").html("Zabbix authentication failed, ask MT ;)");
+		    }
+//		$.unblockUI;
 		}
 	});
 	
@@ -83,9 +113,13 @@ $(document).ready(function() {
 		//    $("#item_list").empty();
 		//    filter_host($('input[name=host_filter_input]').val());
 		//});
-		$.ajax({url:"do/ajax_get_all_hosts/",
+//		$.blockUI({ message: '<h3> Loading data...</h3>' });
+		$.ajax({url:"/do/ajax_get_all_hosts/",
 		        dataType: 'json',
 			async: false,
+			beforeSend: function(){
+			     showLoadingScreen();
+			},
   		        success: function(data){
 			    AllHosts = data;
 			    AllHosts_rev = {};
@@ -96,8 +130,10 @@ $(document).ready(function() {
 			    SelectedItems = [];
 			    $("#item_list").empty();
 			    filter_host($('input[name=host_filter_input]').val());
+			    $.unblockUI;
 			}
 		});
+		
 //		
 //		
 //	    }
@@ -459,13 +495,9 @@ $(document).ready(function() {
 	});
     }
 
-//$('.drag').draggable();	
-	
-//$("#item_container .drag").click(function(){
-//	    alert("asdasdasdad");
-//	    $('#item_container').detach(this);
-//	});
-
+////////////////////////////////
+// Main onclick handler
+////////////////////////////////
     $("body").click(function(e) {
         if($(e.target).is(".rem_item")) {
              $(e.target).parent().detach();
@@ -528,15 +560,21 @@ $(document).ready(function() {
 	if($(e.target).is("#project_fork")){
 	    project_save('fork');
 	}
+	if($(e.target).is("#project_new")){
+	    window.location = "/";
+	}
+	if($(e.target).is("#project_delete")){
+	    project_delete();
+	}
+	if($(e.target).is("#dash_view")){
+	    window.open("/"+$('#screen_id').val()+"/dash/",'_newtab');
+	}
     });
     
-//    $('#itemlist_clear').click(function(){
-//	$('#item_container').empty();
-//    });
-//    $('input[name=zserver]').click(function() {
-//	var zserver = $(this).val();
-//       	
-//    });
+/////////////////////////////////
+// End of main onclick handler
+/////////////////////////////////
+
     $("select[name=graph_yaxismin]").change(function() {
 	    if ($("select[name=graph_yaxismin] :selected").val()=="1") {
 		$("input[name=yaxismin]").css({"display":"inline"})
@@ -708,7 +746,8 @@ $(document).ready(function() {
 	//	    filter_host($('input[name=host_filter_input]').val());
 	//	});
 //	$.when(async).done(function(){
-	ZabServerLoad(zbx_srv,"noloadhosts");
+//	ZabServerLoad(zbx_srv,"noloadhosts");
+	ZabServerLoad(zbx_srv,"none");
 	//ZabServerLoad(zbx_srv,"noloadhosts");
 	    LoadGraphItemList(items,colors,drawtypes);
 //	    });
@@ -732,7 +771,7 @@ $(document).ready(function() {
 		gr_items[i]
 		gr_colors[i]
 		gr_drawtypes[i]
-		var newdiv = "<div class=\"drag\"><input type=\"hidden\" name=\"itemid\" value=\""+gr_items[i]+"\">"+SelectedItems[gr_items[i]][0]+
+		var newdiv = "<div class=\"drag\"><input type=\"hidden\" name=\"itemid\" value=\""+gr_items[i]+"\">"+"("+AllHosts[SelectedItems[gr_items[i]][2]]+"):&nbsp;"+SelectedItems[gr_items[i]][0]+
     "<span class=\"line_type\"><select style=\"line_type_select\"><option value=0>Line</option><option value=1>Filled region</option><option value=2>Bold line</option><option value=3>Dot</option><option value=4>Dashed line</option></select></span><span class=\"select_color\" style=\"background-color: #"+gr_colors[i]+"\" title=\"Select color\"> </span>"+fcolors+"<span class=\"rem_item\" title=\"Remove item\">X</span>";
 	    $(newdiv).appendTo('#item_container').find('select option[value='+gr_drawtypes[i]+']').attr("selected","selected");
 	    }
@@ -741,17 +780,28 @@ $(document).ready(function() {
 	
     }
     
+    function project_delete(){
+	data_json = JSON.stringify({'screen_id':$('#screen_id').val()});
+	$.ajax({
+		type: "POST",
+		url: "/do/delete",
+		data:data_json,
+		success: onDeleteSuccess,
+		dataType: 'json'
+	    });
+    }
+    
     //$('#project_save').click(function()
     function project_save(type){
 	var item_arr = [];
 	$('#workspace .resizeDiv').each(function(index){
-	    item_width=$(this).css('width');
-	    item_heigth=$(this).css('height');
-	    item_left=$(this).css('left');
-	    item_top=$(this).css('top');
+	    item_width=$(this).width();
+	    item_height=$(this).height();
+	    item_left=$(this).position().left;
+	    item_top=$(this).position().top;
 	    item_img=$(this).find('input[name=graph_url]').val();
 //	    item_img=$(this).find("img .graph_image").attr('src');
-	    item_arr.push({'item_width':item_width,'item_heigth':item_heigth,'item_left':item_left,'item_top':item_top,'item_img':item_img});
+	    item_arr.push({'item_width':item_width,'item_height':item_height,'item_left':item_left,'item_top':item_top,'item_img':item_img});
 	});
 	var project_name = "";
 	if ($('#project_name').val()=="") {
@@ -786,8 +836,32 @@ $(document).ready(function() {
     };
     
     function onForkSuccess(data){
- 	alert(data);
+	if (data['error']==1) {
+	    alert("Fork error: "+data['error_str']);
+	}
+	else{
+	    if ($('#screen_id').val() == data['screen_id']) {
+		alert("Screen forked");
+		$('#screen_name').val(data['screen_name']);
+		document.title = "Graph tool :: "+data['screen_name'];
+	    }
+	    else {
+		alert("Page should be reloaded with new token...");
+		window.location = "/"+data['screen_id']+"/view/";
+	    }
+	}
     }
+    
+    function onDeleteSuccess(data) {
+	if (data['error']==1) {
+	    alert("Delete error: "+data['error_str']);
+	}
+	else{
+	    alert("Project deleted, new project started");
+	    window.location = "/";
+	}
+    }
+    
     function onSaveSuccess(data){
 	if (data['error']==1) {
 	    alert("Save error: "+data['error_str']);
@@ -801,47 +875,106 @@ $(document).ready(function() {
 	    else {
 		alert("Page should be reloaded with new token...");
 		window.location = "/"+data['screen_id']+"/view/";
-//		$(location).attr('href',url);
 	    }
 	}
     }
     
     function FetchScreen(url){
-	alert("Fetch "+url);
+//	alert("Fetch "+url);
 	$.ajax({url:"/"+url+"/fetch/",
 	    dataType: 'json',
 	    async: false,
 	    success: function(data){
 		if (data['error']==1) {
-		    alert("Save error: "+data['error_str']);
+		    alert("Fetch error: "+data['error_str']);
 		}	
 		else{
-		    document.title = "Graph tool :: "+data['scr_name'];
-		    $('#screen_name').val(data['scr_name']);
-		    $('#screen_id').val(url);
-		    $.each(data['data'], function(key,val) {
+		    if ($('#screen_type').val()=="view") {
+			document.title = "Graph tool :: "+data['scr_name'];
+			$('#screen_name').val(data['scr_name']);
+			$('#screen_id').val(url);
+			$.each(data['data'], function(key,val) {
+    
 				myheight=data['data'][key]['height'];
 				mywidth=data['data'][key]['width'];
 				myleft=data['data'][key]['left'];
 				mytop=data['data'][key]['top'];
 				myurl=data['data'][key]['url'];
+			    //    var options = {
+			    //	"my": mytop,
+			    //	"at": myleft,
+			    //	"of": "#workspace"
+			    //    };
+				$('<div class="resizeDiv" id="GraphImg'+ImgId+'"><input type=hidden name="graph_url" value="'+myurl+'"><img class="graph_image" src="'+myurl+
+				'"><img class="editImg image_buttons" src="/img/edit.png"><img class="closeImg image_buttons" src="/img/close.png"></div>').appendTo('#workspace')
+			    
+    			    .css({width:mywidth,height:myheight,left:myleft,top:mytop})
+    .find("img.graph_image")
 				
-$('<div class="resizeDiv" id="GraphImg'+ImgId+'"><input type=hidden name="graph_url" value="'+myurl+'"><img class="graph_image" src="'+myurl+
-'"><img class="editImg image_buttons" src="/img/edit.png"><img class="closeImg image_buttons" src="/img/close.png"></div>').appendTo('#workspace').draggable({ snap: true, cancel:".image_buttons"})
-.find("img.graph_image")
-.load(function (){
-    $(this).parent().css({width:mywidth,height:myheight,left:myleft,top:mytop});
-    $(this).parent().resizable({helper: "ui-resizable-helper"});
-    $(this).css({width:"100%",height:"100%"});
-    $(this).parent().unblock();
-    addImageCallBacks($(this).parent());
-})
-.parent().block({ 
-    message: '<h3>Loading image...</h3><span><img class="closeImg image_buttons" src="/img/close.png"></span>', 
-    css: { border: '3px solid #a00' } 
-});
-ImgId++;				
-		    });	
+				
+			      
+				.load(function (){
+    
+    //$("#GraphImg"+ImgId+"").position(options);
+    //				$(this).parent().offset({ top: offset.top, left: offset.left})
+				    
+				    $(this).parent().draggable({ snap: true, cancel:".image_buttons"})
+				    $(this).parent().resizable({helper: "ui-resizable-helper"});
+				    $(this).css({width:"100%",height:"100%"});
+//				    $(this).parent().css({width:mywidth,height:myheight,left:myleft,top:mytop});
+				    $(this).parent().unblock();
+				    addImageCallBacks($(this).parent());
+				})
+				.parent().block({ 
+				    message: '<h3>Loading image...</h3><span><img class="closeImg image_buttons" src="/img/close.png"></span>', 
+				    css: { border: '3px solid #a00' } 
+				});
+				ImgId++;				
+			});
+		    }
+		    else if (($('#screen_type').val()=="dash")) {
+			document.title = "Dasboard :: "+data['scr_name'];
+			$('#screen_name').val(data['scr_name']);
+			$('#screen_id').val(url);
+			$.each(data['data'], function(key,val) {
+				myheight=data['data'][key]['height'];
+				mywidth=data['data'][key]['width'];
+				myleft=data['data'][key]['left'];
+				mytop=data['data'][key]['top'];
+				myurl=data['data'][key]['url'];
+			    //    var options = {
+			    //	"my": mytop,
+			    //	"at": myleft,
+			    //	"of": "#workspace"
+			    //    };
+				$('<div class="resizeDiv" id="GraphImg'+ImgId+'" ><input type=hidden name="graph_url" value="'+myurl+'"><img class="graph_image" src="'+myurl+
+				'>"</div>').appendTo('#workspace')
+			    
+    			    .css({width:mywidth,height:myheight,left:myleft,top:mytop})
+    .find("img.graph_image")
+				
+				
+			      
+				.load(function (){
+    
+    //$("#GraphImg"+ImgId+"").position(options);
+    //				$(this).parent().offset({ top: offset.top, left: offset.left})
+				    
+				    //$(this).parent().draggable({ snap: true, cancel:".image_buttons"})
+				    //$(this).parent().resizable({helper: "ui-resizable-helper"});
+				    $(this).css({width:"100%",height:"100%"});
+//				    $("#GraphImg"+ImgId+"").css({width:mywidth,height:myheight,left:myleft,top:mytop});
+//				    $(this).parent().unblock();
+				    //addImageCallBacks($(this).parent());
+//		})
+//				.parent().block({ 
+//				    message: '<h3>Loading image...</h3><span><img class="closeImg image_buttons" src="/img/close.png"></span>', 
+//				    css: { border: '3px solid #a00' } 
+				});
+				ImgId++;				
+			});
+
+		    }
 		}
 	    }
 	});
@@ -849,5 +982,10 @@ ImgId++;
     
     if ($('#onload').val()!="none") {
 	FetchScreen($('#onload').val());
+    }
+    if($('#screen_id').val()!=""){
+	$('#project_fork').prop('disabled',false);
+	$('#project_delete').prop('disabled',false);
+	$('#dash_view').prop('disabled',false);
     }
 });
