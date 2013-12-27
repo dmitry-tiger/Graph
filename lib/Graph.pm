@@ -14,7 +14,7 @@ sub startup {
     dsn      => 'dbi:mysql:dbname='.$self->{config}->{db}->{name}.';host='.$self->{config}->{db}->{host}.';port='.$self->{config}->{db}->{port},
     username => $self->{config}->{db}->{user},
     password => $self->{config}->{db}->{pass},
-    options  => { 'pg_enable_utf8' => 1, AutoCommit => 1 },
+    options  => { AutoCommit => 1 },
     helper   => 'db',
     }); 
   # Router
@@ -27,13 +27,16 @@ sub setup_routing {
     my $self = shift;
     my $r = $self->routes;
       $r->get('/')->to('screen#newscreen');
-      $r->get('/dash/')->to('screen#dash');
+      $r->get('/:id/dash/:refresh/')->to('screen#dash');
+      $r->get('/:id/dash/')->to('screen#dash');
       $r->get('/do/ajax_get_all_hosts')->to('screen#ajax_get_all_hosts');
       $r->get('/do/ajax_get_items')->to('screen#ajax_get_items');
       $r->get('/do/ajax_get_items_by_itemids')->to('screen#ajax_get_items_by_itemids');
       $r->post('/do/fork')->to('screen#fork');
       $r->post('/do/save')->to('screen#save');
+      $r->post('/do/delete')->to('screen#delete');
       $r->get('/zlogin/:server/')->to('screen#login');
+      $r->post('/do/auth')->to('auth#login');
 #      $r->get('/:id/:type/', type => [qw(view dash)])->to( controller => 'screen', view => 'fetch');
       $r->get('/:id/view/')->to('screen#view');
       $r->get('/:id/fetch/')->to('screen#fetch');
