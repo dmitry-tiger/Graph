@@ -124,7 +124,8 @@ margin-top:20px;
 }
 
 .ui-resizable-helper { border: 2px dotted #00F; }
-
+.ui-resizable{position: absolute;}
+.ui-draggable{position: absolute;}
 .field {
 	clear:both;
 	text-align:right;
@@ -152,6 +153,7 @@ label {
 	width: 800px;
 	height: 600px;
 	display:block;
+	position: absolute;
 }
 .closeImg{
 	position: absolute;
@@ -188,4 +190,9 @@ label {
 	margin-top: 20px;
 	display: none;
 	background-color: yellow;
+}
+.blockOverlay{
+			background-color: 	#000;
+			opacity:	0.6;
+			cursor:				wait;
 }
