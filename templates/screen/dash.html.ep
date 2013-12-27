@@ -1,7 +1,24 @@
-% layout 'default';
-% title 'Welcome';
-<h2><%= $msg %></h2>
-This page was generated from the template "templates/example/welcome.html.ep"
-and the layout "templates/layouts/default.html.ep",
-<a href="<%== url_for %>">click here</a> to reload the page or
-<a href="/index.html">here</a> to move forward to a static page.
+<html>
+<head>
+<title>Graph dash :: <%= title %></title>
+%= stylesheet '/css/colorpicker.css'
+%= stylesheet '/css/jquery.simple-dtpicker.css'
+%= stylesheet 'http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/smoothness/jquery-ui.css'
+%= stylesheet '/css/screen.css'
+
+%= javascript 'http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js'
+%= javascript 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js'
+%= javascript '/js/colorpicker.js'
+%= javascript '/js/jquery.simple-dtpicker.js'
+%= javascript '/js/jquery.blockUI.js'
+%= javascript '/js/graph.js'
+<meta http-equiv="refresh" content="<%=$refresh%>">
+</head>
+<body>
+    <input id="screen_id" type="hidden" value="">
+    <input id="screen_type" type="hidden" value="dash">
+    <input id="screen_name" type="hidden" value="">
+    <input id="onload" type="hidden" value="<%=$goonload%>">
+    <div id="workspace"></div>
+</body>
+</html>
