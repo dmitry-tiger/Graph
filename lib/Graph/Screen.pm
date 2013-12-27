@@ -10,12 +10,7 @@ sub newscreen {
   # Render template "example/welcome.html.ep" with message
   $self->render(msg => 'This is new screen');
 }
-sub dash {
-  my $self = shift;
 
-  # Render template "example/welcome.html.ep" with message
-  $self->render(msg => 'This is new dashboard');
-}
 sub fetch {
   my $self = shift;
   my $id = $self->stash( 'id' );
@@ -61,6 +56,14 @@ sub view{
   my $self = shift;
   my $id = $self->stash( 'id' );
   $self->render(goonload => $id, title => "Loading Graph");
+}
+
+sub dash {
+  my $self = shift;
+  my $id = $self->stash( 'id' );
+  my $refresh = $self->stash('refresh') || 60;
+  $self->render(goonload => $id, title => "Loading Graph", refresh => $refresh);
+  
 }
 
 
@@ -160,11 +163,16 @@ sub login_to_zabbix{
 
 sub fork{
   my $self=shift;
+  my $json = $self->req->json;
   my $screen_id = $self->req->body_params->param('screen_id');
-  my @data = $self->req->body_params->param('data');
+  my @data = @{$json->{'data'}};
   my $project_name = $self->req->body_params->param('project_name') || 'Unnamed Project';
   my $url = $self->gen_tiny_url(6);
-  say $url;
+  unless ($self->save_to_db($url,\@data,$project_name)){
+    $self->render(json => {"error"=>"1","error_str"=>"Error save to db" });
+    return 0;
+  }
+  $self->render(json => {"error"=>"0","error_str"=>"", "screen_id" => $url, "screen_name" => $project_name });
 }
 
 sub save{
@@ -181,6 +189,38 @@ sub save{
   $self->render(json => {"error"=>"0","error_str"=>"", "screen_id" => $url, "screen_name" => $project_name });
 #  my $url = $self->gen_tiny_url(6);
 #  say $url;
+}
+
+sub delete{
+  my $self=shift;
+  my $json = $self->req->json;
+  my $url = $json->{'screen_id'}||0;
+  unless ($url){
+    $self->render(json => {"error"=>"1","error_str"=>"Screen id was empty" });
+    return 0;
+  }
+  my $sth = $self->db->prepare("select s.screenid as screenid, u.username as username from screens s join users u on s.userid = u.userid where s.screentiny = '$url'") 
+  or do {
+    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+    return 0;
+  };
+  $sth->execute or do {
+    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+    return 0;
+  };
+  my $ref = $sth->fetchrow_hashref();
+  my $user_name = $ref->{'username'};
+  my $screen_id = $ref->{'screenid'};
+  $sth = $self->db->prepare("delete from screens where screenid='$screen_id'")or do {
+    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+    return 0;
+  };
+  $sth->execute or do {
+    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+    return 0;
+  };
+  $self->render(json => {"error"=>"0","error_str"=>"" });
+  
 }
 
 sub gen_tiny_url{
@@ -233,8 +273,8 @@ sub save_to_db{
     my $res = $sth->execute;
     my $scid = $sth->{mysql_insertid};
     foreach my $elem (@$data){
-#      say "insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values ('".$elem->{item_width}."','".$elem->{item_heigth}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$scid') ";
-      $sth = $self->db->prepare("insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values ('".$elem->{item_width}."','".$elem->{item_heigth}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$scid');")or do {
+#      say "insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$scid') ";
+      $sth = $self->db->prepare("insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$scid');")or do {
         $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
         return 0;
       };
