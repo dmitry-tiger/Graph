@@ -30,6 +30,9 @@
 			<input id="password" type="password" name="password" placeholder="Password">
 			<input id="signin" class="btn" type="button" name="signin" value="Signin">
 		</div>
+		<div id="user_bar"><span id="user_welcome"></span>
+			<input class="btn" type="button" name="logout" value="Logout">
+		</div>
 		<div id="zabbix_server" class="btn-group">
 			<h4>Chose Zabbix server:</h4>
 % for my $zserver (@{$config->{zabbix}->{servers}}) {
