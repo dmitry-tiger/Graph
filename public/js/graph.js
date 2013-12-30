@@ -569,6 +569,9 @@ $(document).ready(function() {
 	if($(e.target).is("#dash_view")){
 	    window.open("/"+$('#screen_id').val()+"/dash/",'_newtab');
 	}
+	if($(e.target).is("input[name=signin]")){
+	    Login();
+	}
     });
     
 /////////////////////////////////
@@ -594,13 +597,13 @@ $(document).ready(function() {
 	    }
     });
     
-    $("#signin").click(function() {
-	var username = $("#username").val();
-	var password = $("#password").val();
-	$.post("login.cgi", { rm:"login", username:username, password:password},function(username){
-	    $("#logged_in").html("Logged in as: " + username);
-	});
-    });
+//    $("#signin").click(function() {
+//	var username = $("#username").val();
+//	var password = $("#password").val();
+//	$.post("login.cgi", { rm:"login", username:username, password:password},function(username){
+//	    $("#logged_in").html("Logged in as: " + username);
+//	});
+//    });
     
     function EditGraph(obj) {
 	var param_pair = [];
@@ -978,6 +981,32 @@ $(document).ready(function() {
 		}
 	    }
 	});
+    }
+    
+    function Login() {
+	//username=$('#username').val();
+	//password=$('#password').val();
+	data = {'username':$('#username').val(),'password':$('#password').val()};
+	data_json = JSON.stringify(data);
+	$.ajax({
+	    type: "POST",
+	    url: "/do/login",
+	    data:data_json,
+	    success: onLoginSuccess,
+	    dataType: 'json'
+	});
+	
+    }
+    
+    function onLoginSuccess(data) {
+	if (data['error']==1) {
+	    alert("Login error: "+data['error_str']);
+	}
+	else{
+	    $('#user_auth').css({'visibility':"hidden"})
+	    $('#user_bar').css({'visibility':"visible"})
+	    alert ("login success");
+	}
     }
     
     if ($('#onload').val()!="none") {
