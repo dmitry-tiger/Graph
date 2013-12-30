@@ -186,6 +186,10 @@ label {
 	float: right;
 	margin-right: 50px;
 }
+#user_bar{
+	float: right;
+	margin-right: 50px;
+}
 #edit_panel{
 	margin-top: 20px;
 	display: none;
