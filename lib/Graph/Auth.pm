@@ -5,20 +5,83 @@ use Mojo::Base 'Mojolicious::Controller';
 
 sub login{
     my $self=shift;
-    $self->plugin('authentication' => {
-        'autoload_user' => 1,
-        'session_key' => 'wickedapp',
-        'load_user' => \&load_user,
-        'validate_user' => \&validate_user,
-        'current_user_fn' => 'user', # compatibility with old code
-    });
+    my $ldapHost = $self->stash->{config}->{ldap}->{server};
+    my $basedn = $self->stash->{config}->{ldap}->{basedn};
+    my $binddn = $self->stash->{config}->{ldap}->{binddn};
+    my $bindpw = $self->stash->{config}->{ldap}->{bindpw};
+    my $filter = $self->stash->{config}->{ldap}->{filter};
+    my $ldap = Authen::Simple::LDAP->new(
+        host    => $ldapHost,
+        binddn  => $binddn,
+        bindpw  => $bindpw,
+        basedn  => $basedn,
+        filter  => $filter
+    );
+    my $json = $self->req->json;
+    my $username = $json->{'username'}||0;
+    my $password = $json->{'password'}||0;
+    unless ($self->authenticate($username, $password,$ldap)) {
+#       say "Auth for $username Success";
+    $self->render(json => {"error"=>"1","error_str"=>"Auth failed :: $!"});
+    }
+    if ($self->is_user_authenticated) {
+        $self->app->session->default_expiration(86400);
+        $self->app->secret($self->stash->{config}->{general}->{cookie_secret});
+        $self->render(json => {"error"=>"0","error_str"=>"","user"=>$self->user});    
+    }
+    else{
+        $self->render(json => {"error"=>"1","error_str"=>"Unknown auth error"});
+    }
+    
+#    my $user = $self->user;
+#    say "Hi $user";
+#    say $self->current_user;
 }
 
-sub validate_user{
-    
+
+sub islogined{
+    my $self = shift;
+    if ($self->is_user_authenticated){
+        $self->render(json => {"authenticated"=>"1","username"=>$self->user});
+    }
+    else{
+        $self->render(json => {"authenticated"=>"0","username"=>""});   
+    }
 }
 
-sub load_user{
-    
+sub dologout{
+    my $self = shift;
+    if ($self->is_user_authenticated){
+        $self->logout;
+        $self->render(json => {"error"=>"0","error_str"=>"Logout success"}); 
+    }
+    else{
+        $self->render(json => {"error"=>"1","error_str"=>"Not authenticated yet"}); 
+    }
+}
+
+sub fetchprojects{
+    my $self = shift;
+    my @data;
+    if ($self->is_user_authenticated){
+        my $user = $self->user;
+        my $sth =$self->db->prepare("select s.screentiny as screentiny, s.screenname as screenname from screens s join users u on s.userid = u.userid where u.username = '$user'") 
+        or do {
+            $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+            return 0;
+        };
+        $sth->execute or do {
+            $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+            return 0;
+        };
+        while (my $ref=$sth->fetchrow_hashref()) {
+            push @data,{'tiny'=>$ref->{'screentiny'},'name'=>$ref->{'screenname'}};
+        }
+        $self->render(json => {"error"=>"0","error_str"=>"", "data" => \@data});
+        return 1;
+    }
+    else{
+        $self->render(json => {"error"=>"1","error_str"=>"Not authenticated yet"}); 
+    }
 }
 1;
