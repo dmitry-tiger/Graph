@@ -16,7 +16,22 @@ sub startup {
     password => $self->{config}->{db}->{pass},
     options  => { AutoCommit => 1 },
     helper   => 'db',
-    }); 
+    });
+  $self->plugin('authentication' => {
+        'autoload_user' => 1,
+        'session_key' => 'wickedapp',
+        'load_user' => sub { [pop] },
+        'validate_user' => sub{
+          my ($app, $username, $password,$ldap) = @_;
+          if ( $ldap->authenticate( $username, $password ) ) {
+              return $username;
+          }
+          else { 
+            return undef;
+          }
+        },
+        'current_user_fn' => 'user', # compatibility with old code
+    });
   # Router
 #  say $config->{zabbix}->{servers};
 
@@ -36,7 +51,10 @@ sub setup_routing {
       $r->post('/do/save')->to('screen#save');
       $r->post('/do/delete')->to('screen#delete');
       $r->get('/zlogin/:server/')->to('screen#login');
-      $r->post('/do/auth')->to('auth#login');
+      $r->post('/do/login')->to('auth#login');
+      $r->get('/do/islogined')->to('auth#islogined');
+      $r->get('/do/logout')->to('auth#dologout');
+      $r->get('/do/fetchprojects')->to('auth#fetchprojects');
 #      $r->get('/:id/:type/', type => [qw(view dash)])->to( controller => 'screen', view => 'fetch');
       $r->get('/:id/view/')->to('screen#view');
       $r->get('/:id/fetch/')->to('screen#fetch');
