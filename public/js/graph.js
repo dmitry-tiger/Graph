@@ -156,21 +156,6 @@ $(document).ready(function() {
 	filter_item(this.value);
     });
         
-    $('#add').click(function(){
-        var fcolors= "";
-        fcolors=GenerateFastColors();
-        var array_itemids=$('#item_list :selected').map(function(){
-//		return $(this).val();
-//		var newdiv = "<div class=\"drag\"><input type=\"hidden\" value=\""+$(this).val()+"\">"+$(this).text()+"<span class=\"rem_item\">X</span>";
-	    var newdiv = "<div class=\"drag\"><input type=\"hidden\" name=\"itemid\" value=\""+$(this).val()+"\">"+$(this).text()+
-	    "<span class=\"line_type\"><select style=\"line_type_select\"><option value=0>Line</option><option value=1>Filled region</option><option value=2>Bold line</option><option value=3>Dot</option><option value=4>Dashed line</option></select></span><span class=\"select_color\" style=\"background-color: #05ED05\" title=\"Select color\"> </span>"+fcolors+"<span class=\"rem_item\" title=\"Remove item\">X</span>";
-	    $('#item_container').append(newdiv);
-	});
-	$('.drag').mydraggable();
-//	$('#item_container .rem_item').unbind();
-    });
-	
-	
     $('#host_list').change(function() {
         var hostIds = [];
         SelectedItems.length = 0;
@@ -570,7 +555,38 @@ $(document).ready(function() {
 	    window.open("/"+$('#screen_id').val()+"/dash/",'_newtab');
 	}
 	if($(e.target).is("input[name=signin]")){
-	    Login();
+	    doLogin();
+	}
+	if($(e.target).is('#add')){
+	    var fcolors= "";
+	    fcolors=GenerateFastColors();
+	    var array_itemids=$('#item_list :selected').map(function(){
+		var newdiv = "<div class=\"drag\"><input type=\"hidden\" name=\"itemid\" value=\""+$(this).val()+"\">"+$(this).text()+
+		"<span class=\"line_type\"><select style=\"line_type_select\"><option value=0>Line</option><option value=1>Filled region</option><option value=2>Bold line</option><option value=3>Dot</option><option value=4>Dashed line</option></select></span><span class=\"select_color\" style=\"background-color: #05ED05\" title=\"Select color\"> </span>"+fcolors+"<span class=\"rem_item\" title=\"Remove item\">X</span>";
+		$('#item_container').append(newdiv);
+	    });
+	    $('.drag').mydraggable();
+	}
+	if($(e.target).is('input[name=logout]')){
+	    $.ajax({
+		type: "GET",
+		url: "/do/logout",
+		cache: false,
+		success: doLogout,
+		dataType: 'json'
+	    });
+	}
+	if($(e.target).is('input[name=load_project]')){
+	    $.ajax({
+		type: "GET",
+		url: "/do/fetchprojects",
+		cache: false,
+		success: doFetchProjects,
+		dataType: 'json'
+	    });
+	}
+	if($(e.target).is('#close_projlinks')){
+	    $('#project_list').css({display:"none"});
 	}
     });
     
@@ -983,7 +999,7 @@ $(document).ready(function() {
 	});
     }
     
-    function Login() {
+    function doLogin() {
 	//username=$('#username').val();
 	//password=$('#password').val();
 	data = {'username':$('#username').val(),'password':$('#password').val()};
@@ -1003,9 +1019,71 @@ $(document).ready(function() {
 	    alert("Login error: "+data['error_str']);
 	}
 	else{
-	    $('#user_auth').css({'visibility':"hidden"})
-	    $('#user_bar').css({'visibility':"visible"})
-	    alert ("login success");
+	    //$('#user_auth').css({'visibility':"hidden"});
+	    //$('#user_bar').css({'visibility':"visible"});
+	    $('#user_auth').css({'display':"none"});
+	    $('#user_bar').css({'display':"block"});
+	    $('#user_welcome').html("Welcome "+data['username'][0]);
+//	    alert ("login success");
+	}
+//	return 1;
+    }
+    
+    function CheckIfLogged(data) {
+	if(data['authenticated']==1){
+	    $('#user_welcome').html("Welcome "+data['username'][0]);
+	    //$('#user_bar').css({'visibility':"visible"});
+	    //$('#user_auth').css({'visibility':"hidden"});
+	    $('#user_bar').css({'display':"block"});
+	    $('#user_auth').css({'display':"none"});
+	}
+	else{
+	    //$('#user_auth').css({'visibility':"visible"});
+	    //$('#user_bar').css({'visibility':"hidden"});
+	    $('#user_auth').css({'display':"block"});
+	    $('#user_bar').css({'display':"none"});
+	}
+    }
+    
+    function doLogout(data) {
+	if (data['error']==1) {
+	    alert("Logout error: "+data['error_str']);
+	}
+	else{
+	    //$('#user_auth').css({'visibility':"visible"});
+	    //$('#user_bar').css({'visibility':"hidden"});
+	    $('#user_auth').css({'display':"block"});
+	    $('#user_bar').css({'display':"none"});
+	    }
+    }
+    
+    function doFetchProjects(data) {
+	if (data['error']==1) {
+	    alert("Fetch error: "+data['error_str']);
+	}
+	else{
+	    //$('#user_auth').css({'visibility':"hidden"});
+	    //$('#user_bar').css({'visibility':"visible"});
+	    if (data['data'].length > 0) {
+		var links_content='<div id="close_projlinks">&times;</div><ul id=projlinks>';
+		$.each(data['data'], function(projid,proj){
+		    tinyurl=proj['tiny'];
+		    projname=proj['name'];
+		    links_content+="<li class=\"projli\"><a class=\"projlink\" href=\"/"+tinyurl+"/view/\">"+projname+"</a></li>";
+		});
+		links_content+='</ul>';
+		$("#project_list").html(links_content);
+	    }
+	    else{
+		$("#project_list").html("<div id=\"close_projlinks\">&times;</div>List empty.");
+		$("#project_list").css({height:"30px"});
+	    }
+	    if ( $("#project_list" ).is( ":hidden" ) ) {
+		$( "#project_list" ).slideDown( "slow" );
+	    } else {
+		    $("#project_list" ).hide();
+	    }
+//	    alert ("login success");
 	}
     }
     
@@ -1017,4 +1095,12 @@ $(document).ready(function() {
 	$('#project_delete').prop('disabled',false);
 	$('#dash_view').prop('disabled',false);
     }
+    
+    $.ajax({
+	type: "GET",
+	url: "/do/islogined",
+	cache: false,
+	success: CheckIfLogged,
+	dataType: 'json'
+    });
 });
