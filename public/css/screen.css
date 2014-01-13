@@ -185,10 +185,14 @@ label {
 #user_auth{
 	float: right;
 	margin-right: 50px;
+/*	visibility: hidden;*/
+	display: none;
 }
 #user_bar{
 	float: right;
 	margin-right: 50px;
+	/*visibility: hidden;*/
+	display: none;
 }
 #edit_panel{
 	margin-top: 20px;
@@ -199,4 +203,30 @@ label {
 			background-color: 	#000;
 			opacity:	0.6;
 			cursor:				wait;
+}
+#user_welcome{
+	margin-right: 30px;
+}
+#project_list{
+	padding-top: 5px;
+	padding-left: 10px;
+	position: absolute;
+	top:50px;
+	right: 58px;
+	width: 250px;
+	max-height: 200px;
+	height: auto;
+	z-index: 100;
+	overflow:auto;
+	overflow-x:hidden;
+	display: none;
+	border: 1px outset grey;
+	border-bottom-right-radius: 20px;
+}
+
+#close_projlinks {
+    position: absolute;
+    right: 5px;
+    top: 2px;
+    cursor: pointer;
 }
