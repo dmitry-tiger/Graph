@@ -31,7 +31,11 @@
 			<input id="signin" class="btn" type="button" name="signin" value="Signin">
 		</div>
 		<div id="user_bar"><span id="user_welcome"></span>
+			<input class="btn" type="button" name="load_project" value="My projects">
 			<input class="btn" type="button" name="logout" value="Logout">
+		</div>
+		<div id="project_list">
+			
 		</div>
 		<div id="zabbix_server" class="btn-group">
 			<h4>Chose Zabbix server:</h4>
@@ -153,7 +157,7 @@
 	<input id="do_graph_preview" type="button" value="Graph preview">
 	<span class="ProjectButtons">
 		<input type="text" id="project_name" placeholder="My Project Name">
-		<input id="project_save" type="button" value="Save Project">&nbsp;
+		<input id="project_save" type="button" value="Save Project" disabled=true>&nbsp;
 		<input id="project_fork" type="button" value="Fork Project" disabled=true>&nbsp;
 		<input id="project_new" type="button" value="New Project">&nbsp;
 		<input id="project_delete" type="button" value="Delete Project" disabled=true>&nbsp;
