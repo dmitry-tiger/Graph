@@ -15,8 +15,9 @@ sub fetch {
   my $self = shift;
   my $id = $self->stash( 'id' );
   my @data;
+  
   ###################
-  my $userid=1;
+  my $user='guest';
   ###################
   my $sth = $self->db->prepare("select s.screenid as screenid, s.screenname as screenname, u.username as username from screens s join users u on s.userid = u.userid where s.screentiny = '$id'") 
   or do {
@@ -169,7 +170,7 @@ sub fork{
   my $project_name = $self->req->body_params->param('project_name') || 'Unnamed Project';
   my $url = $self->gen_tiny_url(6);
   unless ($self->save_to_db($url,\@data,$project_name)){
-    $self->render(json => {"error"=>"1","error_str"=>"Error save to db" });
+#    $self->render(json => {"error"=>"1","error_str"=>"Error save to db" });
     return 0;
   }
   $self->render(json => {"error"=>"0","error_str"=>"", "screen_id" => $url, "screen_name" => $project_name });
@@ -183,7 +184,7 @@ sub save{
   my $project_name = $json->{'screen_name'} || 'Unnamed Project';
   my $url = ($screen_id eq "") ? $self->gen_tiny_url(6) : $screen_id;
   unless ($self->save_to_db($url,\@data,$project_name)){
-    $self->render(json => {"error"=>"1","error_str"=>"Error save to db" });
+#    $self->render(json => {"error"=>"1","error_str"=>"Error save to db" });
     return 0;
   }
   $self->render(json => {"error"=>"0","error_str"=>"", "screen_id" => $url, "screen_name" => $project_name });
@@ -193,11 +194,15 @@ sub save{
 
 sub delete{
   my $self=shift;
+  my $user = 'quest';
   my $json = $self->req->json;
   my $url = $json->{'screen_id'}||0;
   unless ($url){
     $self->render(json => {"error"=>"1","error_str"=>"Screen id was empty" });
     return 0;
+  }
+  if ($self->is_user_authenticated){
+   $user = $self->user->[0];
   }
   my $sth = $self->db->prepare("select s.screenid as screenid, u.username as username from screens s join users u on s.userid = u.userid where s.screentiny = '$url'") 
   or do {
@@ -210,6 +215,11 @@ sub delete{
   };
   my $ref = $sth->fetchrow_hashref();
   my $user_name = $ref->{'username'};
+  unless ($user_name eq $user) {
+    $self->render(json => {"error"=>"1","error_str"=>"You don't have permission to detele this project" });
+    return 0;
+  }
+  
   my $screen_id = $ref->{'screenid'};
   $sth = $self->db->prepare("delete from screens where screenid='$screen_id'")or do {
     $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
@@ -254,6 +264,37 @@ sub save_to_db{
   my $project_name=shift;
   ###################
   my $userid=1;
+  my $user='guest';
+  if ($self->is_user_authenticated){
+    $user = $self->user->[0];
+    my $sth = $self->db->prepare("select userid from users where username = '$user'")
+    or do {
+      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+      return 0;
+    };
+    $sth->execute or do {
+      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+      return 0;
+    };
+    if ($sth->rows > 0){
+      my $ref = $sth->fetchrow_hashref();
+      $userid = $ref->{'userid'} or do {
+        $self->render(json => {"error"=>"1","error_str"=>"Unknown userid" });
+        return 0;
+      };
+    }
+    else{
+      $sth = $self->db->prepare("insert into users set `username` = '$user';")or do {
+        $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+        return 0;
+      };
+    my $res = $sth->execute or do {
+      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+      return 0;
+    };
+    $userid = $sth->{mysql_insertid};
+    }
+  }
   ###################
   my $sth = $self->db->prepare("select s.screenid, u.username from screens s join users u on s.userid = u.userid where s.screentiny = '$url'") 
   or do {
@@ -270,7 +311,10 @@ sub save_to_db{
       $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
       return 0;
     };
-    my $res = $sth->execute;
+    my $res = $sth->execute or do {
+      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+      return 0;
+    };
     my $scid = $sth->{mysql_insertid};
     foreach my $elem (@$data){
 #      say "insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$scid') ";
@@ -287,6 +331,10 @@ sub save_to_db{
   else{
     my $ref = $sth->fetchrow_hashref();
     my $user_name = $ref->{'username'};
+    unless ($user_name eq $user) {
+      $self->render(json => {"error"=>"1","error_str"=>"You don't have permission to save this project" });
+      return 0;
+    }
     my $screen_id = $ref->{'screenid'};
     $sth = $self->db->prepare("update screens set screentiny='$url', screenname='$project_name'  where screenid='$screen_id';")or do {
       $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });

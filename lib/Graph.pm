@@ -10,6 +10,9 @@ sub startup {
   # Documentation browser under "/perldoc"
   $self->plugin('PODRenderer');
   my $config = $self->plugin('Config');
+  $self->secret($self->{config}->{general}->{cookie_secret});
+  $self->mode('production');
+#  $self->secret($self->stash->{config}->{general}->{cookie_secret});
   $self->plugin('database', { 
     dsn      => 'dbi:mysql:dbname='.$self->{config}->{db}->{name}.';host='.$self->{config}->{db}->{host}.';port='.$self->{config}->{db}->{port},
     username => $self->{config}->{db}->{user},
@@ -32,10 +35,8 @@ sub startup {
         },
         'current_user_fn' => 'user', # compatibility with old code
     });
-  # Router
-#  say $config->{zabbix}->{servers};
-
-  # Normal route to controller
+ 
+  
 }
 
 sub setup_routing {

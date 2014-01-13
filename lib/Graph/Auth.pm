@@ -20,14 +20,15 @@ sub login{
     my $json = $self->req->json;
     my $username = $json->{'username'}||0;
     my $password = $json->{'password'}||0;
-    unless ($self->authenticate($username, $password,$ldap)) {
+    unless (my $test = $self->authenticate($username, $password,$ldap)) {
 #       say "Auth for $username Success";
-    $self->render(json => {"error"=>"1","error_str"=>"Auth failed :: $!"});
+    $self->render(json => {"error"=>"1","error_str"=>"Auth failed :: ".($!||"Invalid login or password")});
+    return;
     }
     if ($self->is_user_authenticated) {
-        $self->app->session->default_expiration(86400);
-        $self->app->secret($self->stash->{config}->{general}->{cookie_secret});
-        $self->render(json => {"error"=>"0","error_str"=>"","user"=>$self->user});    
+        $self->session(expiration => 604800);
+        
+        $self->render(json => {"error"=>"0","error_str"=>"","username"=>$self->user});    
     }
     else{
         $self->render(json => {"error"=>"1","error_str"=>"Unknown auth error"});
@@ -64,7 +65,7 @@ sub fetchprojects{
     my $self = shift;
     my @data;
     if ($self->is_user_authenticated){
-        my $user = $self->user;
+        my $user = $self->user->[0];
         my $sth =$self->db->prepare("select s.screentiny as screentiny, s.screenname as screenname from screens s join users u on s.userid = u.userid where u.username = '$user'") 
         or do {
             $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
