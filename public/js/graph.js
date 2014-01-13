@@ -1024,6 +1024,12 @@ $(document).ready(function() {
 	    $('#user_auth').css({'display':"none"});
 	    $('#user_bar').css({'display':"block"});
 	    $('#user_welcome').html("Welcome "+data['username'][0]);
+	    $('#project_save').prop('disabled',false);
+	    if($('#screen_id').val()!=""){
+		$('#project_fork').prop('disabled',false);
+		$('#project_delete').prop('disabled',false);
+		$('#dash_view').prop('disabled',false);
+	    }
 //	    alert ("login success");
 	}
 //	return 1;
@@ -1036,10 +1042,19 @@ $(document).ready(function() {
 	    //$('#user_auth').css({'visibility':"hidden"});
 	    $('#user_bar').css({'display':"block"});
 	    $('#user_auth').css({'display':"none"});
+	    $('#project_save').prop('disabled',false);
+	    if($('#screen_id').val()!=""){
+		$('#project_fork').prop('disabled',false);
+		$('#project_delete').prop('disabled',false);
+		$('#dash_view').prop('disabled',false);
+	    }
 	}
 	else{
 	    //$('#user_auth').css({'visibility':"visible"});
 	    //$('#user_bar').css({'visibility':"hidden"});
+	    $('#project_fork').prop('disabled',true);
+	    $('#project_delete').prop('disabled',true);
+	    $('#project_save').prop('disabled',true);
 	    $('#user_auth').css({'display':"block"});
 	    $('#user_bar').css({'display':"none"});
 	}
@@ -1054,6 +1069,9 @@ $(document).ready(function() {
 	    //$('#user_bar').css({'visibility':"hidden"});
 	    $('#user_auth').css({'display':"block"});
 	    $('#user_bar').css({'display':"none"});
+	    $('#project_fork').prop('disabled',true);
+	    $('#project_delete').prop('disabled',true);
+	    $('#project_save').prop('disabled',true);
 	    }
     }
     
@@ -1089,11 +1107,6 @@ $(document).ready(function() {
     
     if ($('#onload').val()!="none") {
 	FetchScreen($('#onload').val());
-    }
-    if($('#screen_id').val()!=""){
-	$('#project_fork').prop('disabled',false);
-	$('#project_delete').prop('disabled',false);
-	$('#dash_view').prop('disabled',false);
     }
     
     $.ajax({
