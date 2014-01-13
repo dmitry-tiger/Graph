@@ -182,6 +182,8 @@ sub save{
   my $screen_id = $json->{'screen_id'};
   my @data = @{$json->{'data'}};
   my $project_name = $json->{'screen_name'} || 'Unnamed Project';
+  $project_name =~ s/[^a-zA-Z0-9 .,\-\+\(\)\%\#\$\@!]//;
+  $screen_id =~ s/[^a-zA-Z0-9]//;
   my $url = ($screen_id eq "") ? $self->gen_tiny_url(6) : $screen_id;
   unless ($self->save_to_db($url,\@data,$project_name)){
 #    $self->render(json => {"error"=>"1","error_str"=>"Error save to db" });
@@ -295,6 +297,10 @@ sub save_to_db{
     $userid = $sth->{mysql_insertid};
     }
   }
+  else{
+    $self->render(json => {"error"=>"1","error_str"=>"Guests couldn't save or fork projects. Please log in." });
+    return 0;
+  }
   ###################
   my $sth = $self->db->prepare("select s.screenid, u.username from screens s join users u on s.userid = u.userid where s.screentiny = '$url'") 
   or do {
@@ -317,6 +323,10 @@ sub save_to_db{
     };
     my $scid = $sth->{mysql_insertid};
     foreach my $elem (@$data){
+      $elem->{item_width} =~ s/[^0-9px]//;
+      $elem->{item_height} =~ s/[^0-9px]//;
+      $elem->{item_top} =~ s/[^0-9px]//;
+      $elem->{item_left} =~ s/[^0-9px]//;
 #      say "insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$scid') ";
       $sth = $self->db->prepare("insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$scid');")or do {
         $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
@@ -353,6 +363,10 @@ sub save_to_db{
       return 0;
     };
     foreach my $elem (@$data){
+      $elem->{item_width} =~ s/[^0-9px]//;
+      $elem->{item_height} =~ s/[^0-9px]//;
+      $elem->{item_top} =~ s/[^0-9px]//;
+      $elem->{item_left} =~ s/[^0-9px]//;
       $sth = $self->db->prepare("insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values
                                 ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$screen_id');") or do {
         $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
