@@ -19,15 +19,19 @@ sub fetch {
   ###################
   my $user='guest';
   ###################
-  my $sth = $self->db->prepare("select s.screenid as screenid, s.screenname as screenname, u.username as username from screens s join users u on s.userid = u.userid where s.screentiny = '$id'") 
-  or do {
-    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-    return 0;
-  };
-  $sth->execute or do {
-    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-    return 0;
+  my $sth = $self->dbc->run(sub{
+    my $sth = $_->prepare("select s.screenid as screenid, s.screenname as screenname, u.username as username from screens s join users u on s.userid = u.userid where s.screentiny = '$id'")
+    or do {
+      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+      return 0;
     };
+    $sth->execute or do {
+      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+      return 0;
+    };
+    $sth;
+  });
+    
   if ($sth->rows==0) {
     $self->render(json => {"error"=>"1","error_str"=>"View doesn't exists" });
     return 0;
@@ -206,15 +210,18 @@ sub delete{
   if ($self->is_user_authenticated){
    $user = $self->user->[0];
   }
-  my $sth = $self->db->prepare("select s.screenid as screenid, u.username as username from screens s join users u on s.userid = u.userid where s.screentiny = '$url'") 
-  or do {
-    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-    return 0;
-  };
-  $sth->execute or do {
-    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-    return 0;
-  };
+  my $sth = $self->dbc->run(sub{
+      my $sth=$_->prepare("select s.screenid as screenid, u.username as username from screens s join users u on s.userid = u.userid where s.screentiny = '$url'")
+      or do {
+        $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+      return 0;
+      };
+      $sth->execute or do {
+        $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+        return 0;
+      };
+      $sth;
+  });
   my $ref = $sth->fetchrow_hashref();
   my $user_name = $ref->{'username'};
   unless ($user_name eq $user) {
@@ -253,9 +260,11 @@ sub check_url{
     my $self=shift;
     my $url=shift;
 #    $self->db->connect;
-    my $sth = $self->db->prepare("select * from screens where screentiny = '$url'");
-    my $res = $sth->execute;
-    $sth->rows==0 ? return(1) : return(0);
+    my $sth = $self->dbc->run(sub {
+      $_->do("select * from screens where screentiny = '$url'");
+    });
+    #my $res = $sth->execute;
+    $sth eq '0E0' ? return(1) : return(0);
 #    print $res;
 }
 
@@ -269,15 +278,18 @@ sub save_to_db{
   my $user='guest';
   if ($self->is_user_authenticated){
     $user = $self->user->[0];
-    my $sth = $self->db->prepare("select userid from users where username = '$user'")
-    or do {
-      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-      return 0;
-    };
-    $sth->execute or do {
-      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-      return 0;
-    };
+    my $sth = $self->dbc->run(sub {
+      my $sth = $_->prepare("select userid from users where username = '$user'")
+      or do {
+        $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+        return 0;
+      };
+      $sth->execute or do {
+        $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+        return 0;
+      };
+      $sth;
+    });
     if ($sth->rows > 0){
       my $ref = $sth->fetchrow_hashref();
       $userid = $ref->{'userid'} or do {

@@ -8,7 +8,7 @@ sub get_all_hosts() {
 	my %hostList;
 	my ($key,$value);
 	my $params = {
-		output => ["host","hostid"]
+		output => ["host","hostid","status"]
       
 	};
 #		my $params = {
@@ -20,7 +20,10 @@ sub get_all_hosts() {
 	{
 		$key = $hostListRaw->[$i]->{hostid};
 		$value = $hostListRaw->[$i]->{host};
-		$hostList{$key} .= $value;
+                $status = $hostListRaw->[$i]->{status};
+#		$hostList{$key} .= $value;
+                $hostList{$key} = [$value,$status];
+                
 	}
 	return \%hostList;
 }
@@ -29,11 +32,11 @@ sub get_items_by_hostids
 {
         my ($self, $hostids ) = @_;
         my %itemList;
-        my ($key,$value,$hostkey,$hostid);
+        my ($key,$value,$hostkey,$hostid,$lastvalue,$status);
 #        my $groupId = $self->group_id($groupName);
 	my @hostids = split(",",$hostids);
         my $params = {
-                output => ["name","itemid","key_","hostid"],
+                output => ["name","itemid","key_","hostid","status","lastclock"],
                 hostids => \@hostids,
 		filter => {flags => [0,4]}
         };
@@ -46,7 +49,9 @@ sub get_items_by_hostids
                 $key = $hostListRaw->[$i]->{itemid};
 		$hostkey = $hostListRaw->[$i]->{key_};
 		$hostid = $hostListRaw->[$i]->{hostid};
-                $itemList{$key}=[$value,$hostkey,$hostid];
+                $status = $hostListRaw->[$i]->{status};
+                $lastvalue = $hostListRaw->[$i]->{lastclock};
+                $itemList{$key}=[$value,$hostkey,$hostid,$status,$lastvalue];
         }
         return \%itemList;
 }
@@ -55,11 +60,11 @@ sub get_items_by_itemids
 {
         my ($self, $itemids ) = @_;
         my %itemList;
-        my ($key,$value,$hostkey,$hostid);
+        my ($key,$value,$hostkey,$hostid,$status,$lastvalue);
 #        my $groupId = $self->group_id($groupName);
 	my @itemids = split(",",$itemids);
         my $params = {
-                output => ["name","itemid","key_","hostid"],
+                output => ["name","itemid","key_","hostid","status","lastclock"],
                 itemids => \@itemids,
 		filter => {flags => [0,4]}
         };
@@ -72,7 +77,9 @@ sub get_items_by_itemids
                 $key = $hostListRaw->[$i]->{itemid};
 		$hostkey = $hostListRaw->[$i]->{key_};
 		$hostid = $hostListRaw->[$i]->{hostid};
-                $itemList{$key}=[$value,$hostkey,$hostid];
+                $status = $hostListRaw->[$i]->{status};
+                $lastvalue = $hostListRaw->[$i]->{lastclock};
+                $itemList{$key}=[$value,$hostkey,$hostid,$status,$lastvalue];
         }
         return \%itemList;
 }

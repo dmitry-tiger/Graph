@@ -60,9 +60,10 @@
 				(case insensitive regex)
 				<div>
 				<select id="host_list" name="host_list" multiple="multiple" size="15"> 
-				</select>
+				</select><br>
 				<!--<input id="add" type="button" value=" >> ">-->
 				<!--<input id="remove" type="button" value=" << ">-->
+				<span class=optionred>&#9632; Disabled</span>
 				</div>
 				
 			</div>
@@ -75,8 +76,10 @@
 				<div>
 				<select id="item_list" name="item_list" multiple="multiple" size="15"> 
 				</select>
-				<input id="add" type="button" value=" Add ">
+				<br>
+				<span class=optionred>&#9632; Disabled</span>&nbsp;<span class=optionStr>&#9632; Unsupported</span>&nbsp;<span class=optionGray>&#9632; No data</span>
 				<!--<input id="remove" type="button" value=" << ">-->
+				<span style="float:right"><input id="add" type="button" value=" Add "></span>
 				</div>
 				
 			</div>

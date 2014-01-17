@@ -10,6 +10,18 @@ $(document).ready(function() {
     var async;
     $(document).ajaxStop($.unblockUI);
 
+    var hexDigits = new Array
+        ("0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"); 
+
+    //Function to convert hex format to a rgb color
+    function rgb2hex(rgb) {
+     rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+     return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
+    }
+    
+    function hex(x) {
+      return isNaN(x) ? "00" : hexDigits[(x - x % 16) / 16] + hexDigits[x % 16];
+    }
 //    $(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
     $.ajaxSetup({
         beforeSend:function(){
@@ -70,7 +82,7 @@ $(document).ready(function() {
 	}); 
     }
  
-    function ZabServerLoad(server_name,param) {
+    function ZabServerLoad(server_name,param,vararr) {
 	CurServer = server_name;
 	login_semaphore=1;
 	$('#item_container').empty();
@@ -86,7 +98,7 @@ $(document).ready(function() {
 //	$.blockUI({ message: '<h3> Loading data...</h3>' });     
 	$.ajax({url:"/zlogin/"+server_name,
 	        dataType: 'json',
-		async: false,
+//		async: false,
   		success: function(data){
 		    $("#zauth_result").html(data);
 		    if (parseInt($("#zauth_result").html()) == 0 ) {
@@ -98,41 +110,36 @@ $(document).ready(function() {
 		        $("#zauth_result").html("Zabbix authentication failed, ask MT ;)");
 		    }
 //		$.unblockUI;
+
+		     if (param != "noloadhosts") {
+			$.ajax({url:"/do/ajax_get_all_hosts/",
+				dataType: 'json',
+//				async: false,
+				//beforeSend: function(){
+				//     showLoadingScreen();
+				//},
+				success: function(data){
+				    AllHosts = data;
+				    AllHosts_rev = {};
+				    $.each(AllHosts, function(key,val) {
+					AllHosts_rev[val[0]]= key;
+				    });
+				    login_semaphore=0;
+				    SelectedItems = [];
+				    $("#item_list").empty();
+				    filter_host($('input[name=host_filter_input]').val());
+//				    $.unblockUI;
+				    if (param == "loadlist") {
+					LoadGraphItemList(vararr[0],vararr[1],vararr[2]);
+				    }
+				    
+				}
+			});
+		     }
 		}
 	});
 	
-	    if (param != "noloadhosts") {
-		//$.getJSON("do/ajax_get_all_hosts/", function(data) {
-		//    AllHosts = data;
-		//    AllHosts_rev = {};
-		//    $.each(AllHosts, function(key,val) {
-		//	AllHosts_rev[val]= key;
-		//    });
-		//    login_semaphore=0;
-		//    SelectedItems = [];
-		//    $("#item_list").empty();
-		//    filter_host($('input[name=host_filter_input]').val());
-		//});
-//		$.blockUI({ message: '<h3> Loading data...</h3>' });
-		$.ajax({url:"/do/ajax_get_all_hosts/",
-		        dataType: 'json',
-			async: false,
-			beforeSend: function(){
-			     showLoadingScreen();
-			},
-  		        success: function(data){
-			    AllHosts = data;
-			    AllHosts_rev = {};
-			    $.each(AllHosts, function(key,val) {
-				AllHosts_rev[val]= key;
-			    });
-			    login_semaphore=0;
-			    SelectedItems = [];
-			    $("#item_list").empty();
-			    filter_host($('input[name=host_filter_input]').val());
-			    $.unblockUI;
-			}
-		});
+	   
 		
 //		
 //		
@@ -141,7 +148,6 @@ $(document).ready(function() {
 //        });
 	//while (login_semaphore == 1) {
 	//    sleep(100);
-	}
     }
         
         //$('input[name=filter_button]').click(function() {
@@ -212,7 +218,7 @@ $(document).ready(function() {
 	var ColorStr="<span class=\"fcolors\" title=\"Set color\">";
 	var fastColors = ["ED1144","ED11D0","7F11ED","1118ED","11E9ED","11ED48","F7F30A","F7890A"];
 	for (cindex=0;cindex<fastColors.length;++cindex){
-	    ColorStr=ColorStr+'<span class="fcolor" style="background-color:#'+fastColors[cindex]+'">&nbsp;&nbsp;</span>';
+	    ColorStr=ColorStr+'<span class="fcolor" style="color:#'+fastColors[cindex]+'">&#9632;</span>';
 	};
         ColorStr=ColorStr+"</span>";
         return ColorStr;
@@ -369,9 +375,14 @@ $(document).ready(function() {
 //	       return 0;
 //		});
 //	AllHosts_rev.sort();
-	$.each(AllHosts_rev, function(val,key) {
-	    if (val.match(re) != null ) {
-		groups.push('<option name="'+val+'" value="'+key+'">'+val+'</option>');
+	$.each(AllHosts, function(key,val) {
+	    if (val[0].match(re) != null ) {
+		if (val[1]== "1") {
+		    groups.push('<option name="'+val[0]+'" value="'+key+'" class=\"optionRed\">'+val[0]+'</option>');
+		}
+		else{
+		    groups.push('<option name="'+val[0]+'" value="'+key+'">'+val[0]+'</option>');
+		}
 	    }
 //   groups.sort();
 	});
@@ -391,7 +402,21 @@ $(document).ready(function() {
 //			val[0]=expanddollars(val[0],val[1]);
 //		    }
 //		    val[0] = expanddollars(val[0],val[1]);
-		groups.push('<option value="'+key+'">('+AllHosts[parseInt(val[2])]+') '+val[0]+'</option>');
+		if (+AllHosts[parseInt(val[2])][1]== "1") {
+		    groups.push('<option value="'+key+'" class=\"optionRed\">('+AllHosts[parseInt(val[2])][0]+') '+val[0]+'</option>');
+		}    
+		else if(val[3]=="1"){    
+		    groups.push('<option value="'+key+'" class=\"optionRed\">('+AllHosts[parseInt(val[2])][0]+') '+val[0]+'</option>');
+		}
+		else if(val[3]=="3"){    
+		    groups.push('<option value="'+key+'" class=\"optionStr\">('+AllHosts[parseInt(val[2])][0]+') '+val[0]+'</option>');
+		}
+		else if(val[4]=="0"){    
+		    groups.push('<option value="'+key+'" class=\"optionGray\">('+AllHosts[parseInt(val[2])][0]+') '+val[0]+'</option>');
+		}
+		else{
+		    groups.push('<option value="'+key+'">('+AllHosts[parseInt(val[2])][0]+') '+val[0]+'</option>');
+		}
 	    }    
 	});
                 
@@ -485,11 +510,11 @@ $(document).ready(function() {
 ////////////////////////////////
     $("body").click(function(e) {
         if($(e.target).is(".rem_item")) {
-             $(e.target).parent().detach();
+             $(e.target).parent().parent().detach();
         }
         if($(e.target).is(".fcolor")) {
-	     var fcolor = $(e.target).css("background-color");
-	     $(e.target).parent().parent().find(".select_color").css("background-color", '#' +fcolor);
+	     var fcolor = rgb2hex($(e.target).css("color"));
+	     $(e.target).parent().parent().find(".select_color").css("background-color", fcolor);
 	}
 	if($(e.target).is("input[name=zserver]")) {
 	    var zserver = $(e.target).val();
@@ -561,8 +586,23 @@ $(document).ready(function() {
 	    var fcolors= "";
 	    fcolors=GenerateFastColors();
 	    var array_itemids=$('#item_list :selected').map(function(){
-		var newdiv = "<div class=\"drag\"><input type=\"hidden\" name=\"itemid\" value=\""+$(this).val()+"\">"+$(this).text()+
-		"<span class=\"line_type\"><select style=\"line_type_select\"><option value=0>Line</option><option value=1>Filled region</option><option value=2>Bold line</option><option value=3>Dot</option><option value=4>Dashed line</option></select></span><span class=\"select_color\" style=\"background-color: #05ED05\" title=\"Select color\"> </span>"+fcolors+"<span class=\"rem_item\" title=\"Remove item\">X</span>";
+		var itemid=$(this).val();
+		switch(SelectedItems[itemid][3]) {
+		    case "0":{
+			icolor="#000000";
+			if (SelectedItems[itemid][4]=="0"){
+			    icolor="#C8C8C8";
+			}
+			;break;
+		    }
+		    case "1":{icolor="#F70C0C";break;}
+		    case "3":{icolor="#CD0074";break;}
+		}
+		var colorsarray = Array('178BCC','3D7899','24FFD8','FF7864','CC0812','25CC52','48995E','7EFF35','D875FF','6716CC','CCC45A','999670','FFDB78','B8DBFF','4BACCC','CC6342','996C5E','FF5A77','A6FF9A','7CCC34');
+		var bgcolor = colorsarray[Math.floor(Math.random()*colorsarray.length)];
+		var newdiv = "<div class=\"drag\"><input type=\"hidden\" name=\"itemid\" value=\""+$(this).val()+"\"><span style=\"color:"+icolor+"\">"+$(this).text()+
+		"</span><span class=\"line_options\"><span class=\"line_type\"><select style=\"line_type_select\"><option value=0>Line</option><option value=1>Filled region</option><option value=2>Bold line</option>"+
+		"<option value=3>Dot</option><option value=4>Dashed line</option></select></span><span class=\"select_color\" style=\"background-color: #"+bgcolor+"\" title=\"Select color\"> </span>"+fcolors+"<span class=\"rem_item\" title=\"Remove item\">&times;</span></span>";
 		$('#item_container').append(newdiv);
 	    });
 	    $('.drag').mydraggable();
@@ -766,9 +806,9 @@ $(document).ready(function() {
 	//	});
 //	$.when(async).done(function(){
 //	ZabServerLoad(zbx_srv,"noloadhosts");
-	ZabServerLoad(zbx_srv,"none");
+	ZabServerLoad(zbx_srv,"loadlist",[items,colors,drawtypes]);
 	//ZabServerLoad(zbx_srv,"noloadhosts");
-	    LoadGraphItemList(items,colors,drawtypes);
+	   // LoadGraphItemList(items,colors,drawtypes);
 //	    });
 	$("#edit_panel").css({"display":"block"});
     };
@@ -785,13 +825,34 @@ $(document).ready(function() {
 		}
 	    });
 	    var fcolors= "";
+	    var hcolor="";
+	    var icolor="";
 	    fcolors=GenerateFastColors();
 	    for (var i in gr_items){
+		switch(AllHosts[SelectedItems[gr_items[i]][2]][1]) {
+		    case "0":{hcolor="#000000";break;}
+		    case "1":{hcolor="#F70C0C";break;}
+		}
+		switch(SelectedItems[gr_items[i]][3]) {
+		    case "0":{
+			icolor="#000000";
+			if (SelectedItems[gr_items[i]][4]=="0"){
+			    icolor="#C8C8C8";
+			}
+			;break;
+		    }
+		    case "1":{icolor="#F70C0C";break;}
+		    case "3":{icolor="#CD0074";break;}
+		}
 		gr_items[i]
 		gr_colors[i]
 		gr_drawtypes[i]
-		var newdiv = "<div class=\"drag\"><input type=\"hidden\" name=\"itemid\" value=\""+gr_items[i]+"\">"+"("+AllHosts[SelectedItems[gr_items[i]][2]]+"):&nbsp;"+SelectedItems[gr_items[i]][0]+
-    "<span class=\"line_type\"><select style=\"line_type_select\"><option value=0>Line</option><option value=1>Filled region</option><option value=2>Bold line</option><option value=3>Dot</option><option value=4>Dashed line</option></select></span><span class=\"select_color\" style=\"background-color: #"+gr_colors[i]+"\" title=\"Select color\"> </span>"+fcolors+"<span class=\"rem_item\" title=\"Remove item\">X</span>";
+//		var newdiv = "<div class=\"drag\"><input type=\"hidden\" name=\"itemid\" value=\""+gr_items[i]+"\">"+"(<span style=\"color:"+hcolor+"\">"+AllHosts[SelectedItems[gr_items[i]][2]][0]+"</span>):&nbsp;<span style=\"color:"+hcolor+"\">"+SelectedItems[gr_items[i]][0]+"</span>"+
+//    "<span class=\"line_options\"><span class=\"line_type\"><select style=\"line_type_select\"><option value=0>Line</option><option value=1>Filled region</option><option value=2>Bold line</option><option value=3>Dot</option><option value=4>Dashed line</option></select></span><span class=\"select_color\" style=\"background-color: #"+
+//    gr_colors[i]+"\" title=\"Select color\"> </span>"+fcolors+"<span class=\"rem_item\" title=\"Remove item\">&times;</span></span>";
+    		var newdiv = "<div class=\"drag\"><input type=\"hidden\" name=\"itemid\" value=\""+gr_items[i]+"\">"+"(<span style=\"color:"+hcolor+"\">"+AllHosts[SelectedItems[gr_items[i]][2]][0]+"</span>):&nbsp;<span style=\"color:"+icolor+"\">"+SelectedItems[gr_items[i]][0]+"</span>"+
+    "<span class=\"line_options\"><span class=\"line_type\"><select style=\"line_type_select\"><option value=0>Line</option><option value=1>Filled region</option><option value=2>Bold line</option><option value=3>Dot</option><option value=4>Dashed line</option></select></span><span class=\"select_color\" style=\"background-color: #"+
+    gr_colors[i]+"\" title=\"Select color\"> </span>"+fcolors+"<span class=\"rem_item\" title=\"Remove item\">&times;</span></span>";
 	    $(newdiv).appendTo('#item_container').find('select option[value='+gr_drawtypes[i]+']').attr("selected","selected");
 	    }
 	    $('.drag').mydraggable();

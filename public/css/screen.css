@@ -32,7 +32,7 @@ body {
 }
 
 #item_list {
-	width: 600px;
+	width: 100%;
 }
 
 #hosts_in_maintenance {
@@ -53,8 +53,9 @@ body {
 #items {
   display: table-cell;
   height: 360px;
-  width: 700px;
-  /*margin-left: 30px;*/
+  max-width: 600px;
+  width:600px;
+  padding-right:  30px;
 }
 /*#container {position:absolute; width:500px; top:100px;}*/
 #item_container {
@@ -99,28 +100,30 @@ margin-top:20px;
 
 .rem_item{
 	color: red;
-	float:right;
+/*	float:right;*/
 	/*pointer-events: none;*/
 	/*position: relative;*/
 	/*left:300px;*/
 	/*cursor: pointer;*/
 }
 .select_color{
-        color: yellow;
-        float:right;
-         background: url(../img/select2.png);
+/*        float:right;*/
+        background: url(../img/select2.png);
 	top: 0;
-	right: 115px;
+	display: inline-block;
+/*	right: 115px;*/
 	width: 20px;
 	height: 20px;
 	background-size: 20px 20px;
-	position: absolute;
+	vertical-align: middle;
+/*	position: absolute;*/
 }
 
 .line_type{
-       position: absolute;
+	padding: 5px;
+/*       position: absolute;
        float:right;
-       right: 145px;
+       right: 145px;*/
 }
 
 .ui-resizable-helper { border: 2px dotted #00F; }
@@ -174,9 +177,10 @@ label {
 	margin-right: 50px;
 }
 .fcolors{
-	float: right;
+	padding: 5px;
+/*	float: right;
 	right: 20px;
-	position: absolute;
+	position: absolute;*/
 }
 .axisinput{
 	display: none;
@@ -229,4 +233,25 @@ label {
     right: 5px;
     top: 2px;
     cursor: pointer;
+}
+.optionRed{
+	-moz-appearance: none;
+	color: #F70C0C;
+	font-size: small;
+}
+.optionStr{
+	-moz-appearance: none;
+	color: #CD0074;
+	font-size: small;
+}
+.optionGray{
+	-moz-appearance: none;
+	color: #C8C8C8;
+	font-size: small;
+}
+.line_options{
+	float: right;
+	position: absolute;
+	right: 0px;
+	
 }

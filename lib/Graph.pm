@@ -20,9 +20,12 @@ sub startup {
     $self->{config}->{db}->{pass},
     { AutoCommit => 1, }
   );
+  $connector->mode('ping');
   $self->attr(dbh => sub {$connector->dbh});
+  $self->attr(dbc => sub {$connector});
   $self->helper('db' => sub { return shift->app->dbh });
-
+  $self->helper('dbc' => sub { return shift->app->dbc });
+  
 
 
 
