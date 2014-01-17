@@ -885,8 +885,8 @@ $(document).ready(function() {
     function project_save(type){
 	var item_arr = [];
 	$('#workspace .resizeDiv').each(function(index){
-	    item_width=$(this).width();
-	    item_height=$(this).height();
+	    item_width=Math.floor($(this).width());
+	    item_height=Math.floor($(this).height());
 	    item_left=Math.floor($(this).position().left);
 	    item_top=Math.floor($(this).position().top);
 	    item_img=$(this).find('input[name=graph_url]').val();
