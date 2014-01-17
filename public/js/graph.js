@@ -243,8 +243,15 @@ $(document).ready(function() {
 	    $(this).parent().unblock();
 	    addImageCallBacks($(this).parent());
 	})
+	.error(function (){
+				    $(this).parent().append('<h2>Image load error</h2>');
+				    addImageCallBacks($(this).parent());
+				    $(this).parent().draggable({ snap: true, cancel:".image_buttons"});
+				    $(this).parent().unblock();
+				    $(this).parent().css({'background-color':'red'});
+				})
 	.parent().block({ 
-	    message: '<h3>Loading image...</h3><span><img class="closeImg image_buttons" src="/img/close.png"></span>', 
+	    message: '<h3>Loading image...</h3><span><img class="closeBlk image_buttons" src="/img/close.png"></span>', 
 	    css: { border: '3px solid #a00' } 
 	});
 	ImgId++;
@@ -628,6 +635,9 @@ $(document).ready(function() {
 	if($(e.target).is('#close_projlinks')){
 	    $('#project_list').css({display:"none"});
 	}
+	if($(e.target).is("img.closeBlk")){
+	    $(e.target).parent().parent().parent().unblock();
+	};
     });
     
 /////////////////////////////////
@@ -987,26 +997,30 @@ $(document).ready(function() {
 			    //    };
 				$('<div class="resizeDiv" id="GraphImg'+ImgId+'"><input type=hidden name="graph_url" value="'+myurl+'"><img class="graph_image" src="'+myurl+
 				'"><img class="editImg image_buttons" src="/img/edit.png"><img class="closeImg image_buttons" src="/img/close.png"></div>').appendTo('#workspace')
-			    
-    			    .css({width:mywidth,height:myheight,left:myleft,top:mytop})
-    .find("img.graph_image")
-				
-				
-			      
+
+    			    .css({width:mywidth,height:myheight,left:myleft,top:mytop}).find("img.graph_image")
 				.load(function (){
     
     //$("#GraphImg"+ImgId+"").position(options);
     //				$(this).parent().offset({ top: offset.top, left: offset.left})
 				    
-				    $(this).parent().draggable({ snap: true, cancel:".image_buttons"})
+				    $(this).parent().draggable({ snap: true, cancel:".image_buttons"});
 				    $(this).parent().resizable({helper: "ui-resizable-helper"});
 				    $(this).css({width:"100%",height:"100%"});
 //				    $(this).parent().css({width:mywidth,height:myheight,left:myleft,top:mytop});
 				    $(this).parent().unblock();
 				    addImageCallBacks($(this).parent());
 				})
-				.parent().block({ 
-				    message: '<h3>Loading image...</h3><span><img class="closeImg image_buttons" src="/img/close.png"></span>', 
+				.error(function (){
+				    $(this).parent().append('<h2>Image load error</h2>');
+				    addImageCallBacks($(this).parent());
+				    $(this).parent().draggable({ snap: true, cancel:".image_buttons"});
+				    $(this).parent().unblock();
+				    $(this).parent().css({'background-color':'red'});
+				})
+				.parent().block({
+				    onOverlayClick: $.unblock,
+				    message: '<h3>Loading image...</h3><span><img class="closeBlk image_buttons" src="/img/close.png"></span>', 
 				    css: { border: '3px solid #a00' } 
 				});
 				ImgId++;				

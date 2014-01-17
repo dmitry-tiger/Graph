@@ -165,6 +165,13 @@ label {
 	right: 4px;
 	top: 5px;
 }
+.closeBlk{
+	position: absolute;
+	height: 25px;
+	width: 25px;
+	right: 4px;
+	top: 5px;
+}
 .editImg{
 	position: absolute;
 	height: 25px;
