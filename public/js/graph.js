@@ -887,8 +887,8 @@ $(document).ready(function() {
 	$('#workspace .resizeDiv').each(function(index){
 	    item_width=$(this).width();
 	    item_height=$(this).height();
-	    item_left=$(this).position().left;
-	    item_top=$(this).position().top;
+	    item_left=Math.floor($(this).position().left);
+	    item_top=Math.floor($(this).position().top);
 	    item_img=$(this).find('input[name=graph_url]').val();
 //	    item_img=$(this).find("img .graph_image").attr('src');
 	    item_arr.push({'item_width':item_width,'item_height':item_height,'item_left':item_left,'item_top':item_top,'item_img':item_img});

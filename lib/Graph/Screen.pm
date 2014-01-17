@@ -337,8 +337,8 @@ sub save_to_db{
     foreach my $elem (@$data){
       $elem->{item_width} =~ s/[^0-9px]//;
       $elem->{item_height} =~ s/[^0-9px]//;
-      $elem->{item_top} =~ s/[^0-9px]//;
-      $elem->{item_left} =~ s/[^0-9px]//;
+      $elem->{item_top} =~ s/[^0-9px\-]//;
+      $elem->{item_left} =~ s/[^0-9px\-]//;
 #      say "insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$scid') ";
       $sth = $self->db->prepare("insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$scid');")or do {
         $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
@@ -377,8 +377,8 @@ sub save_to_db{
     foreach my $elem (@$data){
       $elem->{item_width} =~ s/[^0-9px]//;
       $elem->{item_height} =~ s/[^0-9px]//;
-      $elem->{item_top} =~ s/[^0-9px]//;
-      $elem->{item_left} =~ s/[^0-9px]//;
+      $elem->{item_top} =~ s/[^0-9px\-]//;
+      $elem->{item_left} =~ s/[^0-9px\-]//;
       $sth = $self->db->prepare("insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values
                                 ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$screen_id');") or do {
         $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
