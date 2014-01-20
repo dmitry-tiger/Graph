@@ -40,15 +40,18 @@ sub fetch {
   my $scr_id = $ref->{'screenid'};
   my $scr_name = $ref->{'screenname'};
   my $scr_user = $ref->{'username'};
-  $sth = $self->db->prepare("SELECT `width`,`height`,`top`,`left`,`url` FROM graphs where screenid='$scr_id'") 
-  or do {
-    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-    return 0;
-  };
-  $sth->execute or do {
-    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-    return 0;
-  };
+  $sth = $self->dbc->run(sub{
+    my $sth = $_->prepare("SELECT `width`,`height`,`top`,`left`,`url` FROM graphs where screenid='$scr_id'") 
+    or do {
+      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+      return 0;
+    };
+    $sth->execute or do {
+      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+      return 0;
+    };
+    $sth;
+  });
   while ($ref=$sth->fetchrow_hashref()) {
     push @data,{'width'=>$ref->{'width'},'height'=>$ref->{'height'},'top'=>$ref->{'top'},'left'=>$ref->{'left'},'url'=>$ref->{'url'}};
   }
@@ -230,14 +233,17 @@ sub delete{
   }
   
   my $screen_id = $ref->{'screenid'};
-  $sth = $self->db->prepare("delete from screens where screenid='$screen_id'")or do {
-    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-    return 0;
-  };
-  $sth->execute or do {
-    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-    return 0;
-  };
+  my $sth = $self->dbc->run(sub{
+    my $sth = $_->prepare("delete from screens where screenid='$screen_id'")or do {
+      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+      return 0;
+    };
+    $sth->execute or do {
+      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+      return 0;
+    };
+    $sth;
+  });
   $self->render(json => {"error"=>"0","error_str"=>"" });
   
 }
@@ -298,14 +304,17 @@ sub save_to_db{
       };
     }
     else{
-      $sth = $self->db->prepare("insert into users set `username` = '$user';")or do {
-        $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-        return 0;
-      };
-    my $res = $sth->execute or do {
-      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-      return 0;
-    };
+      $sth = $self->dbc->run(sub {
+        my $sth = $_->prepare("insert into users set `username` = '$user';")or do {
+          $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+          return 0;
+        };
+        $sth->execute or do {
+          $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+          return 0;
+        };
+        $sth;
+      });
     $userid = $sth->{mysql_insertid};
     }
   }
@@ -314,33 +323,22 @@ sub save_to_db{
     return 0;
   }
   ###################
-  my $sth = $self->db->prepare("select s.screenid, u.username from screens s join users u on s.userid = u.userid where s.screentiny = '$url'") 
-  or do {
-    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-    return 0;
-  };
-  $sth->execute or do {
-    $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-    return 0;
+  my $sth = $self->dbc->run(sub {
+    my $sth = $_->prepare("select s.screenid, u.username from screens s join users u on s.userid = u.userid where s.screentiny = '$url'") 
+    or do {
+      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+      return 0;
     };
+    $sth->execute or do {
+      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+      return 0;
+      };
+    $sth;
+  });
   if ($sth->rows==0) {
 #    say "insert into screens (`screentiny`,`screenname`,`userid`)  values ('$url','$project_name','$userid')";
-    $sth = $self->db->prepare("insert into screens (`screentiny`,`screenname`,`userid`)  values ('$url','$project_name','$userid');")or do {
-      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-      return 0;
-    };
-    my $res = $sth->execute or do {
-      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-      return 0;
-    };
-    my $scid = $sth->{mysql_insertid};
-    foreach my $elem (@$data){
-      $elem->{item_width} =~ s/[^0-9px]//;
-      $elem->{item_height} =~ s/[^0-9px]//;
-      $elem->{item_top} =~ s/[^0-9px\-]//;
-      $elem->{item_left} =~ s/[^0-9px\-]//;
-#      say "insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$scid') ";
-      $sth = $self->db->prepare("insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$scid');")or do {
+    $sth = $self->dbc->run(sub {
+      my $sth = $_->prepare("insert into screens (`screentiny`,`screenname`,`userid`)  values ('$url','$project_name','$userid');")or do {
         $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
         return 0;
       };
@@ -348,6 +346,26 @@ sub save_to_db{
         $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
         return 0;
       };
+      $sth;
+    });
+    my $scid = $sth->{mysql_insertid};
+    foreach my $elem (@$data){
+      $elem->{item_width} =~ s/[^0-9px]//;
+      $elem->{item_height} =~ s/[^0-9px]//;
+      $elem->{item_top} =~ s/[^0-9px\-]//;
+      $elem->{item_left} =~ s/[^0-9px\-]//;
+#      say "insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$scid') ";
+      $sth = $self->dbc->run(sub {
+        my $sth = $_->prepare("insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$scid');")or do {
+          $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+          return 0;
+        };
+        $sth->execute or do {
+          $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+          return 0;
+        };
+        $sth;
+      });
     }
   }
   else{
@@ -358,29 +376,8 @@ sub save_to_db{
       return 0;
     }
     my $screen_id = $ref->{'screenid'};
-    $sth = $self->db->prepare("update screens set screentiny='$url', screenname='$project_name'  where screenid='$screen_id';")or do {
-      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-      return 0;
-    };
-    $sth->execute or do {
-      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-      return 0;
-    };
-    $sth = $self->db->prepare("delete from graphs where screenid='$screen_id'")or do {
-      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-      return 0;
-    };
-    $sth->execute or do {
-      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-      return 0;
-    };
-    foreach my $elem (@$data){
-      $elem->{item_width} =~ s/[^0-9px]//;
-      $elem->{item_height} =~ s/[^0-9px]//;
-      $elem->{item_top} =~ s/[^0-9px\-]//;
-      $elem->{item_left} =~ s/[^0-9px\-]//;
-      $sth = $self->db->prepare("insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values
-                                ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$screen_id');") or do {
+    $sth = $self->dbc->run(sub {
+      my $sth = $_->prepare("update screens set screentiny='$url', screenname='$project_name'  where screenid='$screen_id';")or do {
         $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
         return 0;
       };
@@ -388,6 +385,36 @@ sub save_to_db{
         $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
         return 0;
       };
+      $sth;
+    });
+    $sth = $self->dbc->run(sub {
+      my $sth = $_->prepare("delete from graphs where screenid='$screen_id'")or do {
+        $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+        return 0;
+      };
+      $sth->execute or do {
+        $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+        return 0;
+      };
+      $sth;
+    });
+    foreach my $elem (@$data){
+      $elem->{item_width} =~ s/[^0-9px]//;
+      $elem->{item_height} =~ s/[^0-9px]//;
+      $elem->{item_top} =~ s/[^0-9px\-]//;
+      $elem->{item_left} =~ s/[^0-9px\-]//;
+      $sth = $self->dbc->run(sub {
+        my $sth = $_->prepare("insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values
+                                ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$screen_id');") or do {
+          $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+          return 0;
+        };
+        $sth->execute or do {
+          $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+          return 0;
+        };
+        $sth;
+      });
     }
   }
   return 1;
