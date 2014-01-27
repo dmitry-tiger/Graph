@@ -1,6 +1,6 @@
 package Graph::Screen;
 use Zabapi;
-use GraphDb;
+#use GraphDb;
 use Mojo::Base 'Mojolicious::Controller';
 
 # This action will render a template
@@ -144,26 +144,25 @@ sub ajax_get_items_by_itemids{
 
 sub login_to_zabbix{
   my $self = shift;
-  $zserver = shift || "";
+  my $zserver = shift || "";
   my $zserverUrl = "http://$zserver.ringcentral.com/api_jsonrpc.php";
 #  $self->clog('info',"Trying to login to Zabbix server: $zserverUrl with user: $zabbixAuth->{user}");   
   my $zabapi = Zabapi->new(server => $zserverUrl, verbosity => '0');
   my $zabbixAuth = { user => $self->stash->{config}->{zabbix}->{username}, password => $self->stash->{config}->{zabbix}->{password}};
   eval {
-  $zabapi->login($zabbixAuth)
+  my $res =$zabapi->login($zabbixAuth);
+  say $res;
   };
   if ($@) {
     $self->render(json => {"error"=>"$@" });
-    exit;
+    return 0;
   }
   else
   {
     if (defined $zabapi->{cookie}) {
-#     $self->clog('info',"Login to $zserver success");
       return $zabapi;
     }
     else {
-#     $self->clog('info',"Login to $zserver failed");
       return '-1';
     }
   }
