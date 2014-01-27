@@ -144,7 +144,7 @@ sub ajax_get_items_by_itemids{
 
 sub login_to_zabbix{
   my $self = shift;
-  my $zserver = shift;
+  $zserver = shift || "";
   my $zserverUrl = "http://$zserver.ringcentral.com/api_jsonrpc.php";
 #  $self->clog('info',"Trying to login to Zabbix server: $zserverUrl with user: $zabbixAuth->{user}");   
   my $zabapi = Zabapi->new(server => $zserverUrl, verbosity => '0');
@@ -233,7 +233,7 @@ sub delete{
   }
   
   my $screen_id = $ref->{'screenid'};
-  my $sth = $self->dbc->run(sub{
+  $sth = $self->dbc->run(sub{
     my $sth = $_->prepare("delete from screens where screenid='$screen_id'")or do {
       $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
       return 0;
