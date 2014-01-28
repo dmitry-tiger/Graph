@@ -24,7 +24,7 @@ sub startup {
   $self->plugin('PODRenderer');
   my $config = $self->plugin('Config');
   $self->secret($self->{config}->{general}->{cookie_secret});
-  $self->mode('production');
+#  $self->mode('production');
 
   $self->helper('dbc' => sub { return shift->app->dbc });
   
@@ -67,6 +67,7 @@ sub setup_routing {
 #      $r->get('/:id/:type/', type => [qw(view dash)])->to( controller => 'screen', view => 'fetch');
       $r->get('/:id/view/')->to('screen#view');
       $r->get('/:id/fetch/')->to('screen#fetch');
+      $r->get('/analyzer/')->to('eanalyzer#new_ea');
 #      $r->get('/:id/:type/', type => [qw(view dash)])->to( controller => 'screen', view => 'type');
 }
 
