@@ -4,16 +4,9 @@ use Mojo::Base 'Mojolicious';
 #use Mojolicious::Plugin::Database;
 use DBIx::Connector;
 # This method will run once at server start
-sub startup {
-  my $self = shift;
-  $self->setup_routing;
-  # Documentation browser under "/perldoc"
-  $self->plugin('PODRenderer');
-  my $config = $self->plugin('Config');
-  $self->secret($self->{config}->{general}->{cookie_secret});
-#  $self->mode('production');
-#  $self->secret($self->stash->{config}->{general}->{cookie_secret});
 
+has dbc => sub {
+  my $self = shift;
   my $connector = DBIx::Connector->new(
     "dbi:mysql:database=".$self->{config}->{db}->{name}.';host='.$self->{config}->{db}->{host}.';port='.$self->{config}->{db}->{port},
     $self->{config}->{db}->{user},
@@ -21,23 +14,19 @@ sub startup {
     { AutoCommit => 1, }
   );
   $connector->mode('ping');
-  $self->attr(dbh => sub {$connector->dbh});
-  $self->attr(dbc => sub {$connector});
-  $self->helper('db' => sub { return shift->app->dbh });
+  return $connector;
+};
+
+
+sub startup {
+  my $self = shift;
+  $self->setup_routing;
+  $self->plugin('PODRenderer');
+  my $config = $self->plugin('Config');
+  $self->secret($self->{config}->{general}->{cookie_secret});
+  $self->mode('production');
+
   $self->helper('dbc' => sub { return shift->app->dbc });
-  
-
-
-
-  #$self->plugin('database', { 
-  #  dsn      => 'dbi:mysql:dbname='.$self->{config}->{db}->{name}.';host='.$self->{config}->{db}->{host}.';port='.$self->{config}->{db}->{port},
-  #  username => $self->{config}->{db}->{user},
-  #  password => $self->{config}->{db}->{pass},
-  #  options  => { AutoCommit => 1 },
-  #  helper   => 'db',
-  #  });
-  
-  
   
   $self->plugin('authentication' => {
         'autoload_user' => 1,
