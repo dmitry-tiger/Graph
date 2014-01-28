@@ -1,0 +1,42 @@
+<html>
+<head>
+<title>Graph dash :: <%= title %></title>
+%= stylesheet '/css/jquery.simple-dtpicker.css'
+%= stylesheet 'http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/smoothness/jquery-ui.css'
+%= stylesheet '/css/eanalyzer.css'
+
+%= javascript 'http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js'
+%= javascript 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js'
+%= javascript '/js/jquery.simple-dtpicker.js'
+%= javascript '/js/eanalyzer.js'
+</head>
+<body>
+<div id="main">
+    <div id="header">
+        Input start & end time of analyzing. Внимание выбор большого периода может наебнуть сервер заббикса или заставить скачать пару гигов картинок.
+    </div>
+    <div id="workspace">
+        <div class="field">
+            <label>Select server:</label>
+            <select>
+            % for my $zserver (@{$config->{zabbix}->{servers}}) {
+            <option value="<%= $zserver %>"><%= $zserver %></option>
+            % }
+            </select>
+        </div>
+        <div class="field">
+            <label>From:</label>
+            <input type="text" name="from_date">
+        </div>
+        <div class="field">
+            <label>To:</label>
+            <input type="text" name="to_date">
+        </div>
+        <div class="field">
+            <input type="button" name="get_events" value="Get events">
+        </div>
+    </div>
+</div> 
+
+</body>
+</html>
