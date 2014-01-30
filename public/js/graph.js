@@ -693,7 +693,7 @@ $(document).ready(function() {
 	var yaxismin="";
 	$("input[name=edit_id]").val(obj.attr("id"));
 	url_str=obj.find('input[name=graph_url]').val();
-	url_split=url_str.match(/.+:\/\/(\w+)\.[^\?]+\?(.*)/);
+	url_split=url_str.match(/.+:\/\/([\w\-]+)\.[^\?]+\?(.*)/);
 	zbx_srv=url_split[1];
 	param_pairs=url_split[2].split('&');
 	for (var key in param_pairs) {
