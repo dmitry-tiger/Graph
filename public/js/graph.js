@@ -193,6 +193,7 @@ $(document).ready(function() {
 	    obj.detach();
 	});
 	obj.find("img.editImg").click(function (){
+	    $('#graph_preview').html("");
 	    $('<span class="warnMsg">This action will reset all selected data except WorkSpace</span>').appendTo('#graph_preview');
 	    	    $('#graph_preview').dialog({
 		modal: true,
@@ -638,6 +639,9 @@ $(document).ready(function() {
 	}
 	if($(e.target).is("img.closeBlk")){
 	    $(e.target).parent().parent().parent().unblock();
+	};
+	if($(e.target).is("input[name=update_period]")){
+	    UpdatePeriodOnAllGraphs();
 	};
     });
     
@@ -1181,10 +1185,29 @@ $(document).ready(function() {
 	}
     }
     
+    function UpdatePeriodOnAllGraphs() {
+	if ($('input[name=update_period_value]').val()=="") {
+	    alert("Please input period");
+	    exit;
+	}
+	$('#workspace .resizeDiv').each(function(index){
+	    period=Math.floor($('input[name=update_period_value]').val());
+	    re=/period=\d+/
+	    item_url=$(this).find('input[name=graph_url]').val().replace(re,'period='+period*3600);
+	    item_img=$(this).find("img.graph_image").attr('src').replace(re,'period='+period*3600);
+	    $(this).find('input[name=graph_url]').val(item_url);
+	    $(this).find("img.graph_image").attr('src',item_img);
+//	    alert("!!"+period+"-"+item_img+item_url);
+	});
+    }
+    
     if ($('#onload').val()!="none") {
 	FetchScreen($('#onload').val());
     }
     
+    $('*[name=graph_date]').appendDtpicker();
+    $('*[name=graph_date]').val("");
+						
     $.ajax({
 	type: "GET",
 	url: "/do/islogined",
