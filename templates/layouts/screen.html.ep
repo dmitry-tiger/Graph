@@ -136,16 +136,17 @@
 				</div>
 				<div id="period_updater">
 					<div class="field">
-					<label>Update data period on all graphs:</label><br>
-					<label><input name="update_period_value" type="text" value="">Hours</label>
-					<input name="update_period" type="button" value="Update"><br><br>
-					</div>	
-					<div class="field">
 					<label>Update start date/time on all graphs:</label><br>
 					<label><span style="font-size:70%">Empty will remove start date/time</span></label><br>
 					<label><input name="update_time_value" type="text" value=""></label>
-					<input name="update_time" type="button" value="Update">
+					<input name="update_time" type="button" value="Update"><br><br>
 					</div>
+					<div class="field">
+					<label>Update data period on all graphs:</label><br>
+					<label><input name="update_period_value" type="text" value="">Hours</label>
+					<input name="update_period" type="button" value="Update">
+					</div>	
+					
 				</div>
 			</div>
 		</div>
