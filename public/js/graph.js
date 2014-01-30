@@ -548,6 +548,7 @@ $(document).ready(function() {
 		css: { border: '3px solid #a00' } 
 	    });
 	    //$("#GraphImg0").empty();
+	    $('#'+$('input[name=edit_id]'+'').val()).find('input[name=graph_url]').val(graph_url);
 	    $('#'+$('input[name=edit_id]'+'').val()).find('img.graph_image').attr("src",graph_url).load(function (){
 		$('#'+$('input[name=edit_id]').val()+'').unblock()
 	    });
