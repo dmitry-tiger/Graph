@@ -134,13 +134,11 @@
 				<div class="field">
 				<label>Show triggers:</label> <input type="checkbox" name="graph_triggers" checked="true"><br>
 				</div>
-				<script type="text/javascript">
-					$(function(){
-						$('*[name=graph_date]').appendDtpicker();
-						$('*[name=graph_date]').val("");
-					});
-				</script>
-				
+				<div id="period_updater">
+					Update data period on all graphs:<br>
+					<input name="update_period_value" type="text" value="">Hours&nbsp;
+					<input name="update_period" type="button" value="Update">
+				</div>
 			</div>
 		</div>
 
