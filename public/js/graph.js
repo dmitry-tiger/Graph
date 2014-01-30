@@ -643,6 +643,9 @@ $(document).ready(function() {
 	if($(e.target).is("input[name=update_period]")){
 	    UpdatePeriodOnAllGraphs();
 	};
+	if($(e.target).is("input[name=update_time]")){
+	    UpdateStartDateonAllGraphs();
+	};
     });
     
 /////////////////////////////////
@@ -1190,14 +1193,35 @@ $(document).ready(function() {
 	    alert("Please input period");
 	    exit;
 	}
+	period=Math.floor($('input[name=update_period_value]').val());
 	$('#workspace .resizeDiv').each(function(index){
-	    period=Math.floor($('input[name=update_period_value]').val());
 	    re=/period=\d+/
 	    item_url=$(this).find('input[name=graph_url]').val().replace(re,'period='+period*3600);
 	    item_img=$(this).find("img.graph_image").attr('src').replace(re,'period='+period*3600);
 	    $(this).find('input[name=graph_url]').val(item_url);
 	    $(this).find("img.graph_image").attr('src',item_img);
-//	    alert("!!"+period+"-"+item_img+item_url);
+	});
+    }
+    function UpdateStartDateonAllGraphs() {
+	f=$("input[name=update_time_value]").val();
+	if (f == "") {
+	    f="";
+	}
+	else {
+	    f=f.replace(/[\-|\s|:|\D]/g, '');
+	    if (f.length != 12) {
+		f="";
+	    }
+	    else {
+		f="&stime="+f+"00";
+	    }
+	};
+	$('#workspace .resizeDiv').each(function(index){
+	    re=/&stime=\d+/
+	    item_url=$(this).find('input[name=graph_url]').val().replace(re,"");
+	    item_img=$(this).find("img.graph_image").attr('src').replace(re,"");
+	    $(this).find('input[name=graph_url]').val(item_url+f);
+	    $(this).find("img.graph_image").attr('src',item_img+f);
 	});
     }
     
@@ -1207,6 +1231,9 @@ $(document).ready(function() {
     
     $('*[name=graph_date]').appendDtpicker();
     $('*[name=graph_date]').val("");
+    $('*[name=update_time_value]').appendDtpicker();
+    $('*[name=update_time_value]').val("");
+    
 						
     $.ajax({
 	type: "GET",
