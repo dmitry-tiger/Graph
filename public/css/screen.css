@@ -263,6 +263,6 @@ label {
 	
 }
 #period_updater{
-	position: relative; top: 30px; left: 0;
+	position: relative; top: 10px; left: 0;
 	border: 4px double red;
 }
