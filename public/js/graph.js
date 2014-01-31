@@ -122,7 +122,7 @@ $(document).ready(function() {
 				    AllHosts = data;
 				    AllHosts_rev = {};
 				    $.each(AllHosts, function(key,val) {
-					AllHosts_rev[val[0]]= key;
+					AllHosts_rev[val[0]]= [key,val[1]];
 				    });
 				    login_semaphore=0;
 				    SelectedItems = [];
@@ -368,6 +368,24 @@ $(document).ready(function() {
 	window.prompt ("Copy to clipboard: Ctrl+C, Enter", text);
     }
 	
+function sortObject(o) {
+    var sorted = {},
+    key, a = [];
+
+    for (key in o) {
+    	if (o.hasOwnProperty(key)) {
+    		a.push(key);
+    	}
+    }
+
+    a.sort();
+
+    for (key = 0; key < a.length; key++) {
+    	sorted[a[key]] = o[a[key]];
+    }
+    return sorted;
+}	
+	
     function filter_host(filter_str) {
 	var groups = [];
 	var re = new RegExp(filter_str, "i");
@@ -382,16 +400,25 @@ $(document).ready(function() {
 //	       } 
 //	       return 0;
 //		});
-//	AllHosts_rev.sort();
-	$.each(AllHosts, function(key,val) {
+	AllHosts_rev1=sortObject(AllHosts_rev);
+	$.each(AllHosts_rev1, function(key,val) {
 	    if (val[0].match(re) != null ) {
 		if (val[1]== "1") {
-		    groups.push('<option name="'+val[0]+'" value="'+key+'" class=\"optionRed\">'+val[0]+'</option>');
+		    groups.push('<option name="'+key+'" value="'+val[0]+'" class=\"optionRed\">'+key+'</option>');
 		}
 		else{
-		    groups.push('<option name="'+val[0]+'" value="'+key+'">'+val[0]+'</option>');
+		    groups.push('<option name="'+key+'" value="'+val[0]+'">'+key+'</option>');
 		}
 	    }
+	//$.each(AllHosts, function(key,val) {
+	//    if (val[0].match(re) != null ) {
+	//	if (val[1]== "1") {
+	//	    groups.push('<option name="'+val[0]+'" value="'+key+'" class=\"optionRed\">'+val[0]+'</option>');
+	//	}
+	//	else{
+	//	    groups.push('<option name="'+val[0]+'" value="'+key+'">'+val[0]+'</option>');
+	//	}
+	//    }
 //   groups.sort();
 	});
     
