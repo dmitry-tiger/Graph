@@ -19,6 +19,7 @@
     <input id="screen_type" type="hidden" value="dash">
     <input id="screen_name" type="hidden" value="">
     <input id="onload" type="hidden" value="<%=$goonload%>">
+    <div id="graph_tname"></div>
     <div id="workspace"></div>
 </body>
 </html>
