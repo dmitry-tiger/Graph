@@ -38,7 +38,8 @@
 			
 		</div>
 		<div id="zabbix_server" class="btn-group">
-			<h4>Chose Zabbix server:</h4>
+			<div id="graph_tname"></div>
+			Chose Zabbix server:
 % for my $zserver (@{$config->{zabbix}->{servers}}) {
 <input class="btn" type="button" name="zserver" value="<%= $zserver %>">
 % }
@@ -87,30 +88,31 @@
 				<input type="hidden" name="edit_id" value="">
 				<div class="bar_name">Options:</div>
 				<div class="field">
-				<label>Graph type:</label>
+				<label><input type="checkbox" name="m_gr_type">Graph type:</label>
 					<select name="graph_type">
 						<option value=0>Normal</option>
 						<option value=1>Stacked</option>
 					</select>
 					<br>
 				</div>
+				
 				<div class="field">
-				<label>Graph title:</label> <input type="text" name="graph_name" value="" placeholder="My Preffered Graph"><br>
+				<label><input type="checkbox" name="m_gr_title">Graph title:</label> <input type="text" name="graph_name" value="" placeholder="My Preffered Graph"><br>
 				</div>
 				<div class="field">
-				<label>Graph height:</label> <input type="text" name="graph_height" value="300"><br>
+				<label><input type="checkbox" name="m_gr_height">Graph height:</label> <input type="text" name="graph_height" value="300"><br>
 				</div>
 				<div class="field">
-				<label>Graph width:</label> <input type="text" name="graph_width" value="800"><br>
+				<label><input type="checkbox" name="m_gr_width">Graph width:</label> <input type="text" name="graph_width" value="800"><br>
 				</div>
 				<div class="field">
-				<label>Start date/time:</label> <input type="text" name="graph_date"><br>
+				<label><input type="checkbox" name="m_gr_stime">Start date/time:</label> <input type="text" name="graph_date"><br>
 				</div>
 				<div class="field">
-				<label>Data period(hours):</label> <input type="text" name="graph_period" value="3"><br>
+				<label><input type="checkbox" name="m_gr_period">Data period(hours):</label> <input type="text" name="graph_period" value="3"><br>
 				</div>
 				<div class="field">
-				<label>Y axis min:</label>
+				<label><input type="checkbox" name="m_gr_yaxmin">Y axis min:</label>
 					<select name="graph_yaxismin" autocomplete="off">
 						<option value=0 selected="selected">Calculated</option>
 						<option value=1>Fixed</option>
@@ -119,7 +121,7 @@
 					<br>
 				</div>
 				<div class="field">
-				<label>Y axis max:</label>
+				<label><input type="checkbox" name="m_gr_yaxmax">Y axis max:</label>
 					<select name="graph_yaxismax" autocomplete="off">
 						<option value=0 selected="selected">Calculated</option>
 						<option value=1>Fixed</option>
@@ -129,13 +131,35 @@
 					
 				</div>
 				<div class="field">
-				<label>Show legend:</label> <input type="checkbox" name="graph_legend" checked="true"><br>
+				<label><input type="checkbox" name="m_gr_shlegend">Show legend:</label> <input type="checkbox" name="graph_legend" checked="true"><br>
 				</div>
 				<div class="field">
-				<label>Show triggers:</label> <input type="checkbox" name="graph_triggers" checked="true"><br>
+				<label><input type="checkbox" name="m_gr_shtriggers">Show triggers:</label> <input type="checkbox" name="graph_triggers" checked="true"><br>
+				</div>
+				<div style="text-align:left;float:left;margin-top:15px;width:100%">Per item options:</div>
+				<div class="field">
+				<label><input type="checkbox" name="m_gr_calc_fnc">Calc func:</label>
+					<select name="calc_fnc" autocomplete="off">
+						<option value=0 selected="selected">All</option>
+						<option value=1>Minimum</option>
+						<option value=2>Average</option>
+						<option value=3>Maximum</option>
+					</select>
+					<br>
+				</div>
+				<div class="field">
+				<label><input type="checkbox" name="m_gr_line_st">Line type:</label>
+					<select name="line_style" autocomplete="off">
+						<option value="0" selected="selected">Line</option>
+						<option value="1">Filled region</option>
+						<option value="2">Bold line</option>
+						<option value="3">Dot</option>
+						<option value="4">Dashed line</option>
+					</select>
+					<br>
 				</div>
 				<div id="period_updater">
-					<div class="field">
+					<!--<div class="field">
 					<label>Update start date/time on all graphs:</label><br>
 					<label><span style="font-size:70%">Empty will remove start date/time</span></label><br>
 					<label><input name="update_time_value" type="text" value=""></label>
@@ -145,8 +169,8 @@
 					<label>Update data period on all graphs:</label><br>
 					<label><input name="update_period_value" type="text" value="">Hours</label>
 					<input name="update_period" type="button" value="Update">
-					</div>	
-					
+					</div>	-->
+					<input name="update_all" type="button" value="Update all graphs">
 				</div>
 			</div>
 		</div>
