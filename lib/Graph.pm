@@ -1,9 +1,7 @@
 package Graph;
 use Mojo::Base 'Mojolicious';
-#use Mojolicious::Plugin::Config;
-#use Mojolicious::Plugin::Database;
+use Zabapi;
 use DBIx::Connector;
-# This method will run once at server start
 
 has dbc => sub {
   my $self = shift;
@@ -17,16 +15,38 @@ has dbc => sub {
   return $connector;
 };
 
-
 sub startup {
   my $self = shift;
   $self->setup_routing;
   $self->plugin('PODRenderer');
   my $config = $self->plugin('Config');
   $self->secret($self->{config}->{general}->{cookie_secret});
-#  $self->mode('production');
-
+  $self->mode('production');
   $self->helper('dbc' => sub { return shift->app->dbc });
+  $self->helper('zapilogin' => sub {
+      my $self = shift;
+      my $zserver = shift || "";
+      my $zserverUrl = "http://$zserver.".$self->stash->{config}->{zabbix}->{domain}."/api_jsonrpc.php";
+      my $zabapi = Zabapi->new(server => $zserverUrl, verbosity => '0');
+      say $zserverUrl;
+      my $zabbixAuth = { user => $self->stash->{config}->{zabbix}->{username}, password => $self->stash->{config}->{zabbix}->{password}};
+      eval {
+      my $res =$zabapi->login($zabbixAuth);
+      };
+      if ($@) {
+    #    $self->render(json => {"error"=>"$@" });
+        return $@->message;
+      }
+      else
+      {
+        if (defined $zabapi->{cookie}) {
+          return $zabapi;
+        }
+        else {
+          return '-1';
+        }
+      } 
+  });
   
   $self->plugin('authentication' => {
         'autoload_user' => 1,
@@ -64,11 +84,12 @@ sub setup_routing {
       $r->get('/do/islogined')->to('auth#islogined');
       $r->get('/do/logout')->to('auth#dologout');
       $r->get('/do/fetchprojects')->to('auth#fetchprojects');
-#      $r->get('/:id/:type/', type => [qw(view dash)])->to( controller => 'screen', view => 'fetch');
       $r->get('/:id/view/')->to('screen#view');
       $r->get('/:id/fetch/')->to('screen#fetch');
       $r->get('/analyzer/')->to('eanalyzer#new_ea');
-#      $r->get('/:id/:type/', type => [qw(view dash)])->to( controller => 'screen', view => 'type');
+      $r->post('/do/getevents/')->to('eanalyzer#getevents');
+      $r->post('/do/gengraphfromevents/')->to('eanalyzer#gengraph');
+
 }
 
 1;

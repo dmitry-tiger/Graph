@@ -85,7 +85,12 @@ sub login{
 #  my $zabapi = Zabapi->new(server => $zserverUrl, verbosity => '0');
 #  my $zabbixAuth = { user => $self->stash->{config}->{zabbix}->{username}, password => $self->stash->{config}->{zabbix}->{password}};
 #  $zabapi->login($zabbixAuth);
-  my $zabapi = $self->login_to_zabbix($zserver);
+  my $zabapi = $self->zapilogin($zserver);
+  unless (ref($zabapi)){
+      $self->render(json => {"error"=>"1", ,"error_str"=>"Error $zabapi" });
+      return 0;
+  }
+#  my $zabapi = $self->login_to_zabbix($zserver);
   if ($zabapi != -1) {
 #    $self->clog('info',"Login to $zserver success");
     $self->session(zserver => $zserver);
@@ -105,10 +110,14 @@ sub ajax_get_all_hosts{
 
 #	my $q = $self->query();
 #	my $hostGroup = $q->param('host_group');
-	my $zserver = $self->session('zserver');
+#	my $zserver = $self->session('zserver');
 #	my $zabapi = $self->login_to_zabbix($zserver);
 #	$self->clog('info',"Send request to Zabbix $zserver for hostlist in group $hostGroup");
-        my $zabapi=$self->login_to_zabbix($zserver);
+        my $zabapi = $self->zapilogin($self->session('zserver'));
+        unless (ref($zabapi)){
+          $self->render(json => {"error"=>"1", ,"error_str"=>"Error $zabapi" });
+          return 0;
+        }
 	my $hostList = $zabapi->get_all_hosts;
 #	print Dumper $hostList;
 #	print $LOGG  Dumper( $hostList );
@@ -124,8 +133,12 @@ sub ajax_get_items{
 #	print $LOGG  Dumper( @hosts );
 #	print $LOGG  Dumper( $hostids	 );
 #	exit;
-  my $zserver = $self->session('zserver');
-  my $zabapi = $self->login_to_zabbix($zserver);
+#  my $zserver = $self->session('zserver');
+  my $zabapi = $self->zapilogin($self->session('zserver'));
+  unless (ref($zabapi)){
+      $self->render(json => {"error"=>"1", ,"error_str"=>"Error $zabapi" });
+      return 0;
+  }
 #  $self->clog('info',"Send request to Zabbix $zserver for itemlist");
   my $hostList = $zabapi->get_items_by_hostids($hostids);
   return $self->render(json => $hostList);
@@ -135,8 +148,12 @@ sub ajax_get_items_by_itemids{
   my $self = shift;
   my @items =  $self->req->query_params->param('itemids[]');
   my $itemids= join (",", @items);
-  my $zserver = $self->session('zserver');
-  my $zabapi = $self->login_to_zabbix($zserver);
+#  my $zserver = $self->session('zserver');
+  my $zabapi = $self->zapilogin($self->session('zserver'));
+  unless (ref($zabapi)){
+      $self->render(json => {"error"=>"1", ,"error_str"=>"Error $zabapi" });
+      return 0;
+  }
 #  $self->clog('info',"Send request to Zabbix $zserver for itemlist");
   my $hostList = $zabapi->get_items_by_itemids($itemids);
   return $self->render(json => $hostList);  
@@ -151,7 +168,7 @@ sub login_to_zabbix{
   my $zabbixAuth = { user => $self->stash->{config}->{zabbix}->{username}, password => $self->stash->{config}->{zabbix}->{password}};
   eval {
   my $res =$zabapi->login($zabbixAuth);
-  say $res;
+#  say $res;
   };
   if ($@) {
     $self->render(json => {"error"=>"$@" });
@@ -402,6 +419,7 @@ sub save_to_db{
       $elem->{item_height} =~ s/[^0-9px]//;
       $elem->{item_top} =~ s/[^0-9px\-]//;
       $elem->{item_left} =~ s/[^0-9px\-]//;
+      $elem->{item_img} =~ s/'//;
       $sth = $self->dbc->run(sub {
         my $sth = $_->prepare("insert into graphs (`width`,`height`,`top`,`left`,`url`,`screenid`) values
                                 ('".$elem->{item_width}."','".$elem->{item_height}."','".$elem->{item_top}."','".$elem->{item_left}."','".$elem->{item_img}."','$screen_id');") or do {
@@ -418,6 +436,12 @@ sub save_to_db{
   }
   return 1;
   
+}
+
+
+sub createfromanalyzer{
+  my $self = shift;
+ $self->render(json => {"error"=>"0","error_str"=>"" });
 }
 
 1;
