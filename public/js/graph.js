@@ -100,6 +100,10 @@ $(document).ready(function() {
 	        dataType: 'json',
 //		async: false,
   		success: function(data){
+		    if (data['error']==1) {
+			   alert("Login error: "+data['error_str']);
+			   return;
+		    }
 		    $("#zauth_result").html(data);
 		    if (parseInt($("#zauth_result").html()) == 0 ) {
 			$("#zauth_result").removeClass("text-error").addClass("text-success");
@@ -119,6 +123,10 @@ $(document).ready(function() {
 				//     showLoadingScreen();
 				//},
 				success: function(data){
+				    if (data['error']==1) {
+					alert("Fetch error: "+data['error_str']);
+					return;
+				    }
 				    AllHosts = data;
 				    AllHosts_rev = {};
 				    $.each(AllHosts, function(key,val) {
@@ -130,7 +138,7 @@ $(document).ready(function() {
 				    filter_host($('input[name=host_filter_input]').val());
 //				    $.unblockUI;
 				    if (param == "loadlist") {
-					LoadGraphItemList(vararr[0],vararr[1],vararr[2]);
+					LoadGraphItemList(vararr[0],vararr[1],vararr[2],vararr[3]);
 				    }
 				    
 				}
@@ -172,6 +180,10 @@ $(document).ready(function() {
 	    hostIds.push(hostId);
         };
         $.getJSON("/do/ajax_get_items", {hostids:hostIds}, function(data) {
+	    if (data['error']==1) {
+		alert("Fetch error: "+data['error_str']);
+		return;
+	    }
 	    //SelectedItems = data;
 	    SelectedItems=data;
 //		KnownItems.extend(data);
@@ -305,9 +317,10 @@ $(document).ready(function() {
 	$("#item_container .drag").each(function( index ) {
 	    a=$(this).find("input[name=itemid]").val(); 
 	    b=$(this).find(".select_color").css("background-color");
-	    c=$(this).find("select :selected").val();
+	    c=$(this).find("select[name=linest] :selected").val();
+	    cc=$(this).find("select[name=calcf] :selected").val();
 //	    p_str="host[]="+AllHosts[KnownItems[a][2]]+"&item[]="+KnownItems[a][1]+"&color[]="+b+"&drawtype[]="+c+"&";
-	    p_str="itemid[]="+a+"&color[]="+b+"&drawtype[]="+c+"&";
+	    p_str="itemid[]="+a+"&color[]="+b+"&drawtype[]="+c+"&calcfnc[]="+cc+"&";
 	    url_str=url_str+p_str;
 	});
 	d=$('#graph_options').find("input[name=graph_height]").val();
@@ -330,7 +343,7 @@ $(document).ready(function() {
 	    }
 	};
 	g=$('#graph_options').find("input[name=graph_period]").val();
-	g=g.replace(/[\D]/g, '');
+	g=g.replace(/[^0-9\.]/g, '');
 	if (g == "") {g=10800;} else {g=g*3600;}
 	if ($('#graph_options').find("input[name=graph_legend]").prop("checked")) {h="legend=1";} else {h="legend=0";}
 	if ($("select[name=graph_yaxismax] :selected").val()=="1") {
@@ -357,9 +370,9 @@ $(document).ready(function() {
 	    m='';
 	}
 	else{
-	    m='&name='+$('#graph_options').find("input[name=graph_name]").val();
+	    m='&name='+encodeURIComponent($('#graph_options').find("input[name=graph_name]").val());
 	}
-	
+	//n="&calcfnc="+$("select[name=calc_fnc] :selected").val();
 	graph_url="http://"+CurServer+".ringcentral.com/zab_chart2.php?"+url_str+h+f+i+j+"&height="+d+"&width="+e+"&period="+g+"&graphtype="+k+l+m;
 	return graph_url;
     }
@@ -402,7 +415,7 @@ function sortObject(o) {
 //		});
 	AllHosts_rev1=sortObject(AllHosts_rev);
 	$.each(AllHosts_rev1, function(key,val) {
-	    if (val[0].match(re) != null ) {
+	    if (key.match(re) != null ) {
 		if (val[1]== "1") {
 		    groups.push('<option name="'+key+'" value="'+val[0]+'" class=\"optionRed\">'+key+'</option>');
 		}
@@ -637,9 +650,13 @@ function sortObject(o) {
 		var colorsarray = Array('178BCC','3D7899','24FFD8','FF7864','CC0812','25CC52','48995E','7EFF35','D875FF','6716CC','CCC45A','999670','FFDB78','B8DBFF','4BACCC','CC6342','996C5E','FF5A77','A6FF9A','7CCC34');
 		var bgcolor = colorsarray[Math.floor(Math.random()*colorsarray.length)];
 		var newdiv = "<div class=\"drag\"><input type=\"hidden\" name=\"itemid\" value=\""+$(this).val()+"\"><span style=\"color:"+icolor+"\">"+$(this).text()+
-		"</span><span class=\"line_options\"><span class=\"line_type\"><select style=\"line_type_select\"><option value=0>Line</option><option value=1>Filled region</option><option value=2>Bold line</option>"+
+		"</span><span class=\"line_options\">"+
+		"<span class=\"calc_func\"><select style=\"line_type_select\" name=\"calcf\"><option value=0>All</option><option value=1>Min</option><option value=2>Avg</option><option value=3>Max</option></select></span>"
+		+"<span class=\"line_type\"><select style=\"line_type_select\" name=\"linest\"><option value=0>Line</option><option value=1>Filled region</option><option value=2>Bold line</option>"+
 		"<option value=3>Dot</option><option value=4>Dashed line</option></select></span><span class=\"select_color\" style=\"background-color: #"+bgcolor+"\" title=\"Select color\"> </span>"+fcolors+"<span class=\"rem_item\" title=\"Remove item\">&times;</span></span>";
-		$('#item_container').append(newdiv);
+		obj=$('#item_container').append(newdiv);
+		obj.find('select[name=linest] option[value='+$('select[name=line_style]').val()+']').attr("selected","selected");
+		obj.find('select[name=calcf] option[value='+$('select[name=calc_fnc]').val()+']').attr("selected","selected");
 	    });
 	    $('.drag').mydraggable();
 	}
@@ -667,12 +684,15 @@ function sortObject(o) {
 	if($(e.target).is("img.closeBlk")){
 	    $(e.target).parent().parent().parent().unblock();
 	};
-	if($(e.target).is("input[name=update_period]")){
-	    UpdatePeriodOnAllGraphs();
+	if($(e.target).is("input[name=update_all]")){
+	    MassUpdateAllGraphs();
 	};
-	if($(e.target).is("input[name=update_time]")){
-	    UpdateStartDateonAllGraphs();
-	};
+	//if($(e.target).is("input[name=update_period]")){
+	//    UpdatePeriodOnAllGraphs();
+	//};
+	//if($(e.target).is("input[name=update_time]")){
+	//    UpdateStartDateonAllGraphs();
+	//};
     });
     
 /////////////////////////////////
@@ -726,6 +746,7 @@ function sortObject(o) {
 	var graphtype="";
 	var yaxismax="";
 	var yaxismin="";
+	var calcfnc = [];
 	$("input[name=edit_id]").val(obj.attr("id"));
 	url_str=obj.find('input[name=graph_url]').val();
 	url_split=url_str.match(/.+:\/\/([\w\-]+)\.[^\?]+\?(.*)/);
@@ -751,6 +772,9 @@ function sortObject(o) {
 		    break
 		case "drawtype[]":
 		    drawtypes.push(param_pair[i][1]);
+		    break
+		case "calcfnc[]":
+		    calcfnc.push(param_pair[i][1]);
 		    break
 		case "legend":
 		    legend = param_pair[i][1];
@@ -802,6 +826,7 @@ function sortObject(o) {
 	$('input[name=graph_date]').val(stime);
 	$('input[name=graph_name]').val(name);
 	$('select[name=graph_type]').val(graphtype).prop('selected',true);
+//	$('select[name=calc_fnc]').val(calcfnc).prop('selected',true);
 	if (ymin_type == "1") {
 	    $('select[name=graph_yaxismin]').val(ymin_type).prop('selected',true);
 	    $("input[name=yaxismin]").css({"display":"inline"});
@@ -851,15 +876,19 @@ function sortObject(o) {
 	//	});
 //	$.when(async).done(function(){
 //	ZabServerLoad(zbx_srv,"noloadhosts");
-	ZabServerLoad(zbx_srv,"loadlist",[items,colors,drawtypes]);
+	ZabServerLoad(zbx_srv,"loadlist",[items,colors,drawtypes,calcfnc]);
 	//ZabServerLoad(zbx_srv,"noloadhosts");
 	   // LoadGraphItemList(items,colors,drawtypes);
 //	    });
 	$("#edit_panel").css({"display":"block"});
     };
     
-    function LoadGraphItemList(gr_items,gr_colors,gr_drawtypes) {
+    function LoadGraphItemList(gr_items,gr_colors,gr_drawtypes,gr_calcfncs) {
 	$.getJSON("/do/ajax_get_items_by_itemids", {itemids:gr_items}, function(data) {
+	    if (data['error']==1) {
+		alert("Fetch error: "+data['error_str']);
+		return;
+	    }
 	    SelectedItems=data;
 	    KnownItems = $.extend({}, KnownItems, data);
 	    var myRe = /\$(\d)/ig;
@@ -889,16 +918,21 @@ function sortObject(o) {
 		    case "1":{icolor="#F70C0C";break;}
 		    case "3":{icolor="#CD0074";break;}
 		}
-		gr_items[i]
-		gr_colors[i]
-		gr_drawtypes[i]
+		//gr_items[i]
+		//gr_colors[i]
+		//gr_drawtypes[i]
+		//gr_calcfncs[i]
 //		var newdiv = "<div class=\"drag\"><input type=\"hidden\" name=\"itemid\" value=\""+gr_items[i]+"\">"+"(<span style=\"color:"+hcolor+"\">"+AllHosts[SelectedItems[gr_items[i]][2]][0]+"</span>):&nbsp;<span style=\"color:"+hcolor+"\">"+SelectedItems[gr_items[i]][0]+"</span>"+
 //    "<span class=\"line_options\"><span class=\"line_type\"><select style=\"line_type_select\"><option value=0>Line</option><option value=1>Filled region</option><option value=2>Bold line</option><option value=3>Dot</option><option value=4>Dashed line</option></select></span><span class=\"select_color\" style=\"background-color: #"+
 //    gr_colors[i]+"\" title=\"Select color\"> </span>"+fcolors+"<span class=\"rem_item\" title=\"Remove item\">&times;</span></span>";
     		var newdiv = "<div class=\"drag\"><input type=\"hidden\" name=\"itemid\" value=\""+gr_items[i]+"\">"+"(<span style=\"color:"+hcolor+"\">"+AllHosts[SelectedItems[gr_items[i]][2]][0]+"</span>):&nbsp;<span style=\"color:"+icolor+"\">"+SelectedItems[gr_items[i]][0]+"</span>"+
-    "<span class=\"line_options\"><span class=\"line_type\"><select style=\"line_type_select\"><option value=0>Line</option><option value=1>Filled region</option><option value=2>Bold line</option><option value=3>Dot</option><option value=4>Dashed line</option></select></span><span class=\"select_color\" style=\"background-color: #"+
+    "<span class=\"line_options\">"+
+    "<span class=\"calc_func\"><select style=\"line_type_select\" name=\"calcf\"><option value=0>All</option><option value=1>Min</option><option value=2>Avg</option><option value=3>Max</option></select></span>"
+    +"<span class=\"line_type\"><select style=\"line_type_select\" name=\"linest\"><option value=0>Line</option><option value=1>Filled region</option><option value=2>Bold line</option><option value=3>Dot</option><option value=4>Dashed line</option></select></span><span class=\"select_color\" style=\"background-color: #"+
     gr_colors[i]+"\" title=\"Select color\"> </span>"+fcolors+"<span class=\"rem_item\" title=\"Remove item\">&times;</span></span>";
-	    $(newdiv).appendTo('#item_container').find('select option[value='+gr_drawtypes[i]+']').attr("selected","selected");
+	    obj=$(newdiv).appendTo('#item_container');
+	    obj.find('select[name=linest] option[value='+gr_drawtypes[i]+']').attr("selected","selected");
+	    obj.find('select[name=calcf] option[value='+gr_calcfncs[i]+']').attr("selected","selected");
 	    }
 	    $('.drag').mydraggable();
 	});
@@ -968,6 +1002,7 @@ function sortObject(o) {
 	    if ($('#screen_id').val() == data['screen_id']) {
 		alert("Screen forked");
 		$('#screen_name').val(data['screen_name']);
+		$('#graph_tname').html(data['screen_name']);
 		document.title = "Graph tool :: "+data['screen_name'];
 	    }
 	    else {
@@ -995,6 +1030,7 @@ function sortObject(o) {
 	    if ($('#screen_id').val() == data['screen_id']) {
 		alert("Screen saved");
 		$('#screen_name').val(data['screen_name']);
+		$('#graph_tname').html(data['screen_name']);
 		document.title = "Graph tool :: "+data['screen_name'];
 	    }
 	    else {
@@ -1017,6 +1053,7 @@ function sortObject(o) {
 		    if ($('#screen_type').val()=="view") {
 			document.title = "Graph tool :: "+data['scr_name'];
 			$('#screen_name').val(data['scr_name']);
+			$('#graph_tname').html(data['scr_name']);
 			$('#screen_id').val(url);
 			$.each(data['data'], function(key,val) {
     
@@ -1063,6 +1100,7 @@ function sortObject(o) {
 		    }
 		    else if (($('#screen_type').val()=="dash")) {
 			document.title = "Dasboard :: "+data['scr_name'];
+			$('#graph_tname').html(data['scr_name']);
 			$('#screen_name').val(data['scr_name']);
 			$('#screen_id').val(url);
 			$.each(data['data'], function(key,val) {
@@ -1215,41 +1253,199 @@ function sortObject(o) {
 	}
     }
     
-    function UpdatePeriodOnAllGraphs() {
-	if ($('input[name=update_period_value]').val()=="") {
-	    alert("Please input period");
-	    exit;
+    function MassUpdateAllGraphs() {
+	// Graph type
+	if ($('input[name=m_gr_type]').prop("checked")) {
+	    gr_type=Math.floor($('select[name=graph_type] :selected').val());
+	    $('#workspace .resizeDiv').each(function(index){
+		re=/&graphtype=\d+/
+		item_url=$(this).find('input[name=graph_url]').val().replace(re,'&graphtype='+gr_type);
+		item_img=$(this).find("img.graph_image").attr('src').replace(re,'&graphtype='+gr_type);
+		$(this).find('input[name=graph_url]').val(item_url);
+		$(this).find("img.graph_image").attr('src',item_img);
+	    });
 	}
-	period=Math.floor($('input[name=update_period_value]').val());
-	$('#workspace .resizeDiv').each(function(index){
-	    re=/period=\d+/
-	    item_url=$(this).find('input[name=graph_url]').val().replace(re,'period='+period*3600);
-	    item_img=$(this).find("img.graph_image").attr('src').replace(re,'period='+period*3600);
-	    $(this).find('input[name=graph_url]').val(item_url);
-	    $(this).find("img.graph_image").attr('src',item_img);
-	});
-    }
-    function UpdateStartDateonAllGraphs() {
-	f=$("input[name=update_time_value]").val();
-	if (f == "") {
-	    f="";
+	// Graph title
+	if ($('input[name=m_gr_title]').prop("checked")) {
+	    var m='&name='+encodeURIComponent($('#graph_options').find("input[name=graph_name]").val());
+	    $('#workspace .resizeDiv').each(function(index){
+		re=/&name=.*?(?=&(?!amp;))/
+		item_url=$(this).find('input[name=graph_url]').val().replace(re,"");
+		item_img=$(this).find("img.graph_image").attr('src').replace(re,"");
+		$(this).find('input[name=graph_url]').val(item_url+m);
+		$(this).find("img.graph_image").attr('src',item_img+m);
+	    });
 	}
-	else {
-	    f=f.replace(/[\-|\s|:|\D]/g, '');
-	    if (f.length != 12) {
+	// Graph height
+	if ($('input[name=m_gr_height]').prop("checked")) {
+	    if ($('input[name=graph_height]').val()=="") {
+		alert("Please input height");
+		return;
+	    }
+	    gheight=Math.floor($('input[name=graph_height]').val());
+	    $('#workspace .resizeDiv').each(function(index){
+		re=/height=\d+/
+		item_url=$(this).find('input[name=graph_url]').val().replace(re,'height='+gheight);
+		item_img=$(this).find("img.graph_image").attr('src').replace(re,'height='+gheight);
+		$(this).find('input[name=graph_url]').val(item_url);
+		$(this).find("img.graph_image").attr('src',item_img);
+	    });
+	}
+	// Graph width
+	if ($('input[name=m_gr_width]').prop("checked")) {
+	    if ($('input[name=graph_width]').val()=="") {
+		alert("Please input width");
+		return;
+	    }
+	    gwidth=Math.floor($('input[name=graph_width]').val());
+	    $('#workspace .resizeDiv').each(function(index){
+		re=/width=\d+/
+		item_url=$(this).find('input[name=graph_url]').val().replace(re,'width='+gwidth);
+		item_img=$(this).find("img.graph_image").attr('src').replace(re,'width='+gwidth);
+		$(this).find('input[name=graph_url]').val(item_url);
+		$(this).find("img.graph_image").attr('src',item_img);
+	    });
+	}
+	// Graph stime
+	if ($('input[name=m_gr_stime]').prop("checked")) {
+	    f=$("input[name=graph_date]").val();
+	    if (f == "") {
 		f="";
 	    }
 	    else {
-		f="&stime="+f+"00";
+		f=f.replace(/[\-|\s|:|\D]/g, '');
+		if (f.length != 12) {
+		    f="";
+		}
+		else {
+		    f="&stime="+f+"00";
+		}
+	    };
+	    $('#workspace .resizeDiv').each(function(index){
+		re=/&stime=\d+/
+		item_url=$(this).find('input[name=graph_url]').val().replace(re,"");
+		item_img=$(this).find("img.graph_image").attr('src').replace(re,"");
+		$(this).find('input[name=graph_url]').val(item_url+f);
+		$(this).find("img.graph_image").attr('src',item_img+f);
+	    });
+	}
+	// Graph period
+	if ($('input[name=m_gr_period]').prop("checked")) {
+	    if ($('input[name=graph_period]').val()=="") {
+		alert("Please input period");
+		return;
 	    }
-	};
-	$('#workspace .resizeDiv').each(function(index){
-	    re=/&stime=\d+/
-	    item_url=$(this).find('input[name=graph_url]').val().replace(re,"");
-	    item_img=$(this).find("img.graph_image").attr('src').replace(re,"");
-	    $(this).find('input[name=graph_url]').val(item_url+f);
-	    $(this).find("img.graph_image").attr('src',item_img+f);
-	});
+	    period=Math.floor($('input[name=graph_period]').val());
+	    $('#workspace .resizeDiv').each(function(index){
+		re=/period=\d+/
+		item_url=$(this).find('input[name=graph_url]').val().replace(re,'period='+period*3600);
+		item_img=$(this).find("img.graph_image").attr('src').replace(re,'period='+period*3600);
+		$(this).find('input[name=graph_url]').val(item_url);
+		$(this).find("img.graph_image").attr('src',item_img);
+	    });
+	}
+	// Graph yaxismin
+	if ($('input[name=m_gr_yaxmin]').prop("checked")) {
+	    var j = "";
+	    if ($("select[name=graph_yaxismin] :selected").val()=="1") {
+		j=$("input[name=yaxismin]").val();
+		j=j.replace(/[^\d\.]/g, '');
+		j="&ymin_type=1&yaxismin="+j;
+	    }
+	    else
+	    {
+		j="";
+	    }
+	    $('#workspace .resizeDiv').each(function(index){
+		re=/&ymin_type=\d+/
+		item_url=$(this).find('input[name=graph_url]').val().replace(re,'');
+		item_img=$(this).find("img.graph_image").attr('src').replace(re,'');
+		re=/&yaxismin=\d+/
+		item_url=$(this).find('input[name=graph_url]').val().replace(re,'');
+		item_img=$(this).find("img.graph_image").attr('src').replace(re,'');
+		$(this).find('input[name=graph_url]').val(item_url+j);
+		$(this).find("img.graph_image").attr('src',item_img+j);
+	    });
+	}
+	// Graph yaxismax
+	if ($('input[name=m_gr_yaxmax]').prop("checked")) {
+	    var j = "";
+	    if ($("select[name=graph_yaxismax] :selected").val()=="1") {
+		j=$("input[name=yaxismax]").val();
+		j=j.replace(/[^\d\.]/g, '');
+		j="&ymax_type=1&yaxismax="+j;
+	    }
+	    else
+	    {
+		j="";
+	    }
+	    $('#workspace .resizeDiv').each(function(index){
+		re=/&ymax_type=\d+/
+		item_url=$(this).find('input[name=graph_url]').val().replace(re,'');
+		item_img=$(this).find("img.graph_image").attr('src').replace(re,'');
+		re=/&yaxismax=\d+/
+		item_url=$(this).find('input[name=graph_url]').val().replace(re,'');
+		item_img=$(this).find("img.graph_image").attr('src').replace(re,'');
+		$(this).find('input[name=graph_url]').val(item_url+j);
+		$(this).find("img.graph_image").attr('src',item_img+j);
+	    });
+	}
+	// Graph legend
+	if ($('input[name=m_gr_shlegend]').prop("checked")) {
+	    if ($('input[name=graph_legend]').prop("checked")){
+		shlegend="1";
+	    }
+	    else{
+		shlegend="0";
+	    }
+	    $('#workspace .resizeDiv').each(function(index){
+		re=/&legend=\d+/
+		item_url=$(this).find('input[name=graph_url]').val().replace(re,'&legend='+shlegend);
+		item_img=$(this).find("img.graph_image").attr('src').replace(re,'&legend='+shlegend);
+		$(this).find('input[name=graph_url]').val(item_url);
+		$(this).find("img.graph_image").attr('src',item_img);
+	    });
+	}
+	// Graph trigger
+	if ($('input[name=m_gr_shtriggers]').prop("checked")) {
+	    if ($('input[name=graph_triggers]').prop("checked")){
+		triggers="1";
+	    }
+	    else{
+		triggers="0";
+	    }
+	    $('#workspace .resizeDiv').each(function(index){
+		re=/&showtriggers=\d+/
+		item_url=$(this).find('input[name=graph_url]').val().replace(re,'&showtriggers'+triggers);
+		item_img=$(this).find("img.graph_image").attr('src').replace(re,'&showtriggers='+triggers);
+		$(this).find('input[name=graph_url]').val(item_url);
+		$(this).find("img.graph_image").attr('src',item_img);
+	    });
+	}
+	
+	// Graph calc fnc
+	if ($('input[name=m_gr_calc_fnc]').prop("checked")) {
+	    calc_fnc=Math.floor($('select[name=calc_fnc] :selected').val());
+	    $('#workspace .resizeDiv').each(function(index){
+		re=/&calcfnc\[\]=\d+/g
+		item_url=$(this).find('input[name=graph_url]').val().replace(re,'&calcfnc[]='+calc_fnc);
+		item_img=$(this).find("img.graph_image").attr('src').replace(re,'&calcfnc[]='+calc_fnc);
+		$(this).find('input[name=graph_url]').val(item_url);
+		$(this).find("img.graph_image").attr('src',item_img);
+	    });
+	}
+	// Graph line type
+	if ($('input[name=m_gr_line_st]').prop("checked")) {
+	    line_st=Math.floor($('select[name=line_style] :selected').val());
+	    $('#workspace .resizeDiv').each(function(index){
+		re=/&drawtype\[\]=\d+/g
+		item_url=$(this).find('input[name=graph_url]').val().replace(re,'&drawtype[]='+line_st);
+		item_img=$(this).find("img.graph_image").attr('src').replace(re,'&drawtype[]='+line_st);
+		$(this).find('input[name=graph_url]').val(item_url);
+		$(this).find("img.graph_image").attr('src',item_img);
+	    });
+	}
+	
     }
     
     if ($('#onload').val()!="none") {
