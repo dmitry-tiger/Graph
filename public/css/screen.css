@@ -72,7 +72,7 @@ body {
 .drag{
 	position:relative;
 	cursor:default;
-	width: 700px;
+	width: 900px;
 	z-index:1;
 	/*background-color: #EBEBEB;*/
 	}
@@ -225,7 +225,7 @@ label {
 	top:50px;
 	right: 58px;
 	width: 250px;
-	max-height: 200px;
+/*	max-height: 200px;*/
 	height: auto;
 	z-index: 100;
 	overflow:auto;
@@ -265,4 +265,13 @@ label {
 #period_updater{
 	position: relative; top: 10px; left: 0;
 	border: 4px double red;
+}
+.field > select {
+    width: 90px;
+}
+#graph_tname{
+    font-size: 25px;
+    font-weight: bold;
+    margin: 20px;
+    text-align: center;
 }

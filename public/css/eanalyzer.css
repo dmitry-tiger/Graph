@@ -2,3 +2,63 @@
     width: 100%;
     height: 100%;
 }
+#events{
+    display: table;
+    border-collapse: collapse;
+    font-size: small;
+}
+.event,.eventhead{
+    display: table-row;
+    background-color: #EFEDED;
+    border: 1px solid #000;
+}
+
+.evdate{
+    display: table-cell;
+    width: 180px;
+}
+.evcb{
+    display: table-cell;
+    width: 55px; 
+}
+.evitems{
+    display: table-cell;
+    width: 380px;
+    overflow: hidden;
+}
+.evtriggers{
+    display: table-cell;
+    
+}
+.evhosts{
+    display: table-cell;
+    width: 180px;
+}
+.tablehead{
+        display: table-cell;
+        font: bold 10pt Arial;
+}
+#user_auth{
+	float: right;
+	margin-right: 50px;
+/*	visibility: hidden;*/
+	display: none;
+}
+#user_bar{
+	float: right;
+	margin-right: 50px;
+	/*visibility: hidden;*/
+	display: none;
+}
+#events-footer{
+    /*display: -moz-inline-box;*/
+    margin: 10px 0 10px 0;
+}
+.eitemm{
+    background-color: #FFA700;
+}
+.blockOverlay{
+			background-color: 	#000;
+			opacity:	0.6;
+			cursor:				wait;
+}
