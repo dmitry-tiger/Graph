@@ -275,3 +275,7 @@ label {
     margin: 20px;
     text-align: center;
 }
+.hide_disabled{
+	float:right;
+	margin-right: 45px;
+}

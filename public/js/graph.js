@@ -416,8 +416,11 @@ function sortObject(o) {
 	AllHosts_rev1=sortObject(AllHosts_rev);
 	$.each(AllHosts_rev1, function(key,val) {
 	    if (key.match(re) != null ) {
-		if (val[1]== "1") {
+		if ((val[1]== "1") && ($('input[name=filter_disabled]').prop("checked")==false)) {
 		    groups.push('<option name="'+key+'" value="'+val[0]+'" class=\"optionRed\">'+key+'</option>');
+		}
+		else if (val[1]== "1") {
+		    
 		}
 		else{
 		    groups.push('<option name="'+key+'" value="'+val[0]+'">'+key+'</option>');
@@ -453,16 +456,16 @@ function sortObject(o) {
 		if (+AllHosts[parseInt(val[2])][1]== "1") {
 		    groups.push('<option value="'+key+'" class=\"optionRed\">('+AllHosts[parseInt(val[2])][0]+') '+val[0]+'</option>');
 		}    
-		else if(val[3]=="1"){    
+		else if((val[3]=="1") &&($('input[name=filter_items_disabled]').prop("checked")==false)){
 		    groups.push('<option value="'+key+'" class=\"optionRed\">('+AllHosts[parseInt(val[2])][0]+') '+val[0]+'</option>');
 		}
-		else if(val[3]=="3"){    
+		else if((val[3]=="3") &&($('input[name=filter_items_unsupported]').prop("checked")==false)){    
 		    groups.push('<option value="'+key+'" class=\"optionStr\">('+AllHosts[parseInt(val[2])][0]+') '+val[0]+'</option>');
 		}
-		else if(val[4]=="0"){    
+		else if((val[4]=="0") && ($('input[name=filter_items_nodata]').prop("checked")==false)&&($('input[name=filter_items_disabled]').prop("checked")==false)){    
 		    groups.push('<option value="'+key+'" class=\"optionGray\">('+AllHosts[parseInt(val[2])][0]+') '+val[0]+'</option>');
 		}
-		else{
+		else if(val[3]=="0"){
 		    groups.push('<option value="'+key+'">('+AllHosts[parseInt(val[2])][0]+') '+val[0]+'</option>');
 		}
 	    }    
@@ -567,6 +570,12 @@ function sortObject(o) {
 	if($(e.target).is("input[name=zserver]")) {
 	    var zserver = $(e.target).val();
 	     ZabServerLoad (zserver,"");
+	}
+	if($(e.target).is("input[name=filter_disabled]")) {
+	    filter_host($('input[name=host_filter_input]').val());
+	}
+	if($(e.target).is("input[name=filter_items_disabled]" || "input[name=filter_items_unsupported]" || "input[name=filter_items_nodata]")) {
+	    filter_item($('input[name=item_filter_input]').val());
 	}
 	if($(e.target).is("#itemlist_clear")) {
 	    $('#item_container').empty();

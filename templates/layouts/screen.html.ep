@@ -56,7 +56,7 @@
 			<div id="hosts">
 				
 				<div class="bar_name">Hosts:</div>
-				Host filter:<br><input type="text" name="host_filter_input"><br>
+				Host filter:<br><input type="text" name="host_filter_input"><span class="hide_disabled">Hide disabled<input type="checkbox" name="filter_disabled"></span><br>
 				<!--<input type="button" value="Go!" name="filter_button">-->
 				(case insensitive regex)
 				<div>
@@ -71,7 +71,9 @@
 			<div id="items">
 				
 				<div class="bar_name">Items:</div>
-				Item filter:<br><input type="text" name="item_filter_input"><br>
+				Item filter:<br><input type="text" name="item_filter_input"><span class="hide_disabled">
+				Hide: disabled<input type="checkbox" name="filter_items_disabled">&nbsp;unsupported
+				<input type="checkbox" name="filter_items_unsupported">&nbsp;nodata<input type="checkbox" name="filter_items_nodata"></span><br>
 				<!--<input type="button" value="Go!" name="filter_button">-->
 				(case insensitive regex)
 				<div>
