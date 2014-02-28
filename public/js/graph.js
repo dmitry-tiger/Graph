@@ -244,8 +244,6 @@ $(document).ready(function() {
 	    return;
 	}
 	graph_url = generate_graph_url();
-//	graph_url=graph_url.replace(/"/g, '&quot;');
-//	graph_url=graph_url.replace(/\+/g, '%2b');
 	$('<div class="resizeDiv" id="GraphImg'+ImgId+'"><input type=hidden name="graph_url" value="'+graph_url+'"><img class="graph_image" src="'+graph_url+
 	  '"><img class="editImg image_buttons" src="/img/edit.png"><img class="closeImg image_buttons" src="/img/close.png"></div>').appendTo('#workspace').draggable({ snap: true, cancel:".image_buttons"})
 	.find("img.graph_image")
@@ -606,6 +604,29 @@ function sortObject(o) {
 	    $('#item_container').empty();
 	    $("input[name=edit_id]").val("");
 	}
+	if($(e.target).is('input[name=add_bookmark]')){
+	    $.ajax({
+		type: "GET",
+		url: "/do/bookmark/"+$('#screen_id').val(),
+		cache: false,
+		success: function (data){
+		    if (data['error']==1) {
+			alert("Bookmark error: "+data['error_str']);
+		    }
+		    else{
+			if (data['bookmarked']=="0") {
+				$('input[name=add_bookmark]').prop("disabled",true);
+				alert("Already bookmarked");
+			}
+			else if (data['bookmarked']=="1") {
+				$('input[name=add_bookmark]').prop("disabled",true);
+				alert("Added to bookmark");
+			}
+		    }
+		},
+		dataType: 'json'
+	    });
+	}
 	if($(e.target).is(".select_color")) {
 	    $(e.target).ColorPicker({
 		color: '#05ED05',
@@ -625,6 +646,24 @@ function sortObject(o) {
 	if($(e.target).is("#project_save")){
 	    project_save('save');
 	}
+	if($(e.target).is(".del_bookmark")){
+	    bid=$(e.target).find('input[name=bid]').val();
+	    $(e.target).parent().detach();
+	    $.ajax({
+		type: "GET",
+		url: "/do/deletebookmark/"+bid,
+		cache: false,
+		success: function(data){
+		    if (data['error']==1) {
+			alert("Bookmark  error: "+data['error_str']);
+		    }else{
+			alert("Bookmark deleted");
+		    }
+		},
+		dataType: 'json'
+	    });
+	}
+	
 	if($(e.target).is("#project_fork")){
 	    project_save('fork');
 	}
@@ -687,8 +726,20 @@ function sortObject(o) {
 		dataType: 'json'
 	    });
 	}
+	if($(e.target).is('input[name=load_bookmarks]')){
+	    $.ajax({
+		type: "GET",
+		url: "/do/fetchbookmarks",
+		cache: false,
+		success: doFetchBookmarks,
+		dataType: 'json'
+	    });
+	}
 	if($(e.target).is('#close_projlinks')){
 	    $('#project_list').css({display:"none"});
+	}
+	if($(e.target).is('#close_bookmarks')){
+	    $('#bookmark_list').css({display:"none"});
 	}
 	if($(e.target).is("img.closeBlk")){
 	    $(e.target).parent().parent().parent().unblock();
@@ -726,14 +777,6 @@ function sortObject(o) {
 		$("input[name=yaxismax]").css({"display":"none"})
 	    }
     });
-    
-//    $("#signin").click(function() {
-//	var username = $("#username").val();
-//	var password = $("#password").val();
-//	$.post("login.cgi", { rm:"login", username:username, password:password},function(username){
-//	    $("#logged_in").html("Logged in as: " + username);
-//	});
-//    });
     
     function EditGraph(obj) {
 	var param_pair = [];
@@ -1118,34 +1161,12 @@ function sortObject(o) {
 				myleft=data['data'][key]['left'];
 				mytop=data['data'][key]['top'];
 				myurl=data['data'][key]['url'];
-			    //    var options = {
-			    //	"my": mytop,
-			    //	"at": myleft,
-			    //	"of": "#workspace"
-			    //    };
 				$('<div class="resizeDiv" id="GraphImg'+ImgId+'" ><input type=hidden name="graph_url" value="'+myurl+'"><img class="graph_image" src="'+myurl+
 				'>"</div>').appendTo('#workspace')
 			    
     			    .css({width:mywidth,height:myheight,left:myleft,top:mytop})
-    .find("img.graph_image")
-				
-				
-			      
-				.load(function (){
-    
-    //$("#GraphImg"+ImgId+"").position(options);
-    //				$(this).parent().offset({ top: offset.top, left: offset.left})
-				    
-				    //$(this).parent().draggable({ snap: true, cancel:".image_buttons"})
-				    //$(this).parent().resizable({helper: "ui-resizable-helper"});
-				    $(this).css({width:"100%",height:"100%"});
-//				    $("#GraphImg"+ImgId+"").css({width:mywidth,height:myheight,left:myleft,top:mytop});
-//				    $(this).parent().unblock();
-				    //addImageCallBacks($(this).parent());
-//		})
-//				.parent().block({ 
-//				    message: '<h3>Loading image...</h3><span><img class="closeImg image_buttons" src="/img/close.png"></span>', 
-//				    css: { border: '3px solid #a00' } 
+    .find("img.graph_image").load(function (){
+				    $(this).css({width:"100%",height:"100%"}); 
 				});
 				ImgId++;				
 			});
@@ -1182,6 +1203,8 @@ function sortObject(o) {
 	    $('#user_bar').css({'display':"block"});
 	    $('#user_welcome').html("Welcome "+data['username'][0]);
 	    $('#project_save').prop('disabled',false);
+	    $('#bmspan').css({'display':"inline"});
+	    CheckIfBookmarked($('#onload').val());
 	    if($('#screen_id').val()!=""){
 		$('#project_fork').prop('disabled',false);
 		$('#project_delete').prop('disabled',false);
@@ -1200,6 +1223,8 @@ function sortObject(o) {
 	    $('#user_bar').css({'display':"block"});
 	    $('#user_auth').css({'display':"none"});
 	    $('#project_save').prop('disabled',false);
+	    $('#bmspan').css({'display':"inline"});
+	    CheckIfBookmarked($('#onload').val());
 	    if($('#screen_id').val()!=""){
 		$('#project_fork').prop('disabled',false);
 		$('#project_delete').prop('disabled',false);
@@ -1214,6 +1239,8 @@ function sortObject(o) {
 	    $('#project_save').prop('disabled',true);
 	    $('#user_auth').css({'display':"block"});
 	    $('#user_bar').css({'display':"none"});
+	    $('#bmspan').css({'display':"none"});
+	    
 	}
     }
     
@@ -1229,6 +1256,7 @@ function sortObject(o) {
 	    $('#project_fork').prop('disabled',true);
 	    $('#project_delete').prop('disabled',true);
 	    $('#project_save').prop('disabled',true);
+	    $('#bmspan').css({'display':"none"});
 	    }
     }
     
@@ -1259,6 +1287,37 @@ function sortObject(o) {
 		    $("#project_list" ).hide();
 	    }
 //	    alert ("login success");
+	}
+    }
+    
+    function doFetchBookmarks(data){
+	if (data['error']==1) {
+	    alert("Fetch error: "+data['error_str']);
+	}
+	else{
+	     if (data['data'].length > 0) {
+		var links_content='<div id="close_bookmarks">&times;</div><ul id=projlinks>';
+		$.each(data['data'], function(projid,proj){
+		    tinyurl=proj['tiny'];
+		    projname=proj['name'];
+		    projowner=proj['owner'];
+		    bookmarkid=proj['bookmarkid'];
+		    links_content+="<li class=\"projli\"><a class=\"projlink\" href=\"/"+tinyurl+"/view/\">"+projname+
+			"</a>&nbsp;("+projowner+")&nbsp<span class=\"del_bookmark\"><input type=\"hidden\" name=\"bid\" value=\""+
+			bookmarkid+"\">&times;</div></li>";
+		});
+		links_content+='</ul>';
+		$("#bookmark_list").html(links_content);
+	    }
+	    else{
+		$("#bookmark_list").html("<div id=\"close_bookmarks\">&times;</div>List empty.");
+		$("#bookmark_list").css({height:"30px"});
+	    }
+	    if ( $("#bookmark_list" ).is( ":hidden" ) ) {
+		$( "#bookmark_list" ).slideDown( "slow" );
+	    } else {
+		    $("#bookmark_list" ).hide();
+	    }
 	}
     }
     
@@ -1436,11 +1495,22 @@ function sortObject(o) {
 	if ($('input[name=m_gr_calc_fnc]').prop("checked")) {
 	    calc_fnc=Math.floor($('select[name=calc_fnc] :selected').val());
 	    $('#workspace .resizeDiv').each(function(index){
-		re=/&calcfnc\[\]=\d+/g
-		item_url=$(this).find('input[name=graph_url]').val().replace(re,'&calcfnc[]='+calc_fnc);
-		item_img=$(this).find("img.graph_image").attr('src').replace(re,'&calcfnc[]='+calc_fnc);
-		$(this).find('input[name=graph_url]').val(item_url);
-		$(this).find("img.graph_image").attr('src',item_img);
+		re=/&calcfnc\[\]=\d+/g;
+		value=$(this).find('input[name=graph_url]').val();
+		var rearr2 = re.exec(value);
+		if (rearr2){
+		    item_url=$(this).find('input[name=graph_url]').val().replace(re,'&calcfnc[]='+calc_fnc);
+		    item_img=$(this).find("img.graph_image").attr('src').replace(re,'&calcfnc[]='+calc_fnc);
+		    $(this).find('input[name=graph_url]').val(item_url);
+		    $(this).find("img.graph_image").attr('src',item_img);        
+		    }
+		else{
+		    re=/&drawtype\[\]=/g;
+		    item_url=$(this).find('input[name=graph_url]').val().replace(re,'&calcfnc[]='+calc_fnc+'&drawtype[]=');
+		    item_img=$(this).find("img.graph_image").attr('src').replace(re,'&calcfnc[]='+calc_fnc+'&drawtype[]=');
+		    $(this).find('input[name=graph_url]').val(item_url);
+		    $(this).find("img.graph_image").attr('src',item_img);
+		}
 	    });
 	}
 	// Graph line type
@@ -1455,6 +1525,32 @@ function sortObject(o) {
 	    });
 	}
 	
+    }
+    
+    function CheckIfBookmarked(screenid){
+	if (screenid == ""){screenid="none"}
+	$.ajax({
+	    type: "GET",
+	    url: "/do/checkbookmarked/"+screenid,
+	    cache: false,
+	    success: function (data){
+		if (data['error']==1) {
+		    alert("Bookmark check error: "+data['error_str']);
+		}
+		else{
+		    if (data['bookmarked']=="2") {
+			$('#bmspan').css({'display':"none"});
+		    }
+		    else if (data['bookmarked']=="1") {
+			$('input[name=add_bookmark]').prop('disabled',true);
+		    }
+		    else if (data['bookmarked']=="0") {
+			$('input[name=add_bookmark]').prop('disabled',false);
+		    }
+		}
+	    },
+	    dataType: 'json'
+	});
     }
     
     if ($('#onload').val()!="none") {

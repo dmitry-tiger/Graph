@@ -224,8 +224,8 @@ label {
 	position: absolute;
 	top:50px;
 	right: 58px;
-	width: 250px;
-/*	max-height: 200px;*/
+	width: 300px;
+	max-height: 100%;
 	height: auto;
 	z-index: 100;
 	overflow:auto;
@@ -233,13 +233,40 @@ label {
 	display: none;
 	border: 1px outset grey;
 	border-bottom-right-radius: 20px;
+	background-color: white;
 }
-
+#bookmark_list{
+	padding-top: 5px;
+	padding-left: 10px;
+	position: absolute;
+	top:50px;
+	right: 58px;
+	width: 300px;
+	max-height: 100%;
+	height: auto;
+	z-index: 200;
+	overflow:auto;
+	overflow-x:hidden;
+	display: none;
+	border: 1px outset grey;
+	border-bottom-right-radius: 20px;
+	background-color: white;
+}
 #close_projlinks {
     position: absolute;
     right: 5px;
     top: 2px;
     cursor: pointer;
+}
+#close_bookmarks {
+    position: absolute;
+    right: 5px;
+    top: 2px;
+    cursor: pointer;
+}
+.del_bookmark{
+	color:red;
+	cursor: pointer;
 }
 .optionRed{
 	-moz-appearance: none;
@@ -269,13 +296,23 @@ label {
 .field > select {
     width: 90px;
 }
-#graph_tname{
+#graph_dname{
     font-size: 25px;
     font-weight: bold;
     margin: 20px;
     text-align: center;
 }
+#graph_tname{
+	margin-right: 20px;
+}
 .hide_disabled{
 	float:right;
 	margin-right: 45px;
+	font-size: small;
+}
+.hint{
+	font-size: small;
+}
+.projli{
+	margin-left: -25px;
 }

@@ -61,32 +61,4 @@ sub dologout{
     }
 }
 
-sub fetchprojects{
-    my $self = shift;
-    my @data;
-    if ($self->is_user_authenticated){
-        my $user = $self->user->[0];
-        my $sth = $self->dbc->run(sub{
-            my $sth =$_->prepare("select s.screentiny as screentiny, s.screenname as screenname from screens s join users u on s.userid = u.userid where u.username = '$user'") 
-            or do {
-                $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-                return 0;
-            };
-            $sth->execute or do {
-                $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-                return 0;
-            };
-            $sth;
-        });
-        
-        while (my $ref=$sth->fetchrow_hashref()) {
-            push @data,{'tiny'=>$ref->{'screentiny'},'name'=>$ref->{'screenname'}};
-        }
-        $self->render(json => {"error"=>"0","error_str"=>"", "data" => \@data});
-        return 1;
-    }
-    else{
-        $self->render(json => {"error"=>"1","error_str"=>"Not authenticated yet"}); 
-    }
-}
 1;

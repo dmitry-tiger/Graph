@@ -83,10 +83,14 @@ sub setup_routing {
       $r->post('/do/login')->to('auth#login');
       $r->get('/do/islogined')->to('auth#islogined');
       $r->get('/do/logout')->to('auth#dologout');
-      $r->get('/do/fetchprojects')->to('auth#fetchprojects');
+      $r->get('/do/fetchprojects')->to('screen#fetchprojects');
+      $r->get('/do/fetchbookmarks')->to('screen#fetchbookmarks');
       $r->get('/:id/view/')->to('screen#view');
       $r->get('/:id/fetch/')->to('screen#fetch');
       $r->get('/analyzer/')->to('eanalyzer#new_ea');
+      $r->get('/do/bookmark/:id')->to('screen#bookmark');
+      $r->get('/do/checkbookmarked/:id')->to('screen#checkbookmarked');
+      $r->get('/do/deletebookmark/:id')->to('screen#deletebookmark');
       $r->post('/do/getevents/')->to('eanalyzer#getevents');
       $r->post('/do/gengraphfromevents/')->to('eanalyzer#gengraph');
 

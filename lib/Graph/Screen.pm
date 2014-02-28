@@ -151,9 +151,8 @@ sub ajax_get_items_by_itemids{
 #  my $zserver = $self->session('zserver');
   my $zabapi = $self->zapilogin($self->session('zserver'));
   unless (ref($zabapi)){
-      $self->render(json => {"error"=>"1", ,"error_str"=>"Error $zabapi" });
-      return 0;
-  }
+      return $self->render(json => {"error"=>"1", ,"error_str"=>"Error $zabapi" });
+      }
 #  $self->clog('info',"Send request to Zabbix $zserver for itemlist");
   my $hostList = $zabapi->get_items_by_itemids($itemids);
   return $self->render(json => $hostList);  
@@ -188,9 +187,12 @@ sub login_to_zabbix{
 sub fork{
   my $self=shift;
   my $json = $self->req->json;
-  my $screen_id = $self->req->body_params->param('screen_id');
+  #my $screen_id = $self->req->body_params->param('screen_id');
+  my $screen_id = $json->{'screen_id'};
   my @data = @{$json->{'data'}};
-  my $project_name = $self->req->body_params->param('project_name') || 'Unnamed Project';
+  my $project_name = $json->{'screen_name'} || 'Unnamed Project';
+  $project_name =~ s/[^a-zA-Z0-9 .,\-\+\(\)\%\#\$\@!]//;
+  #my $project_name = $self->req->body_params->param('project_name') || 'Unnamed Project';
   my $url = $self->gen_tiny_url(6);
   unless ($self->save_to_db($url,\@data,$project_name)){
 #    $self->render(json => {"error"=>"1","error_str"=>"Error save to db" });
@@ -442,6 +444,197 @@ sub save_to_db{
 sub createfromanalyzer{
   my $self = shift;
  $self->render(json => {"error"=>"0","error_str"=>"" });
+}
+
+sub fetchprojects{
+    my $self = shift;
+    my @data;
+    if ($self->is_user_authenticated){
+        my $user = $self->user->[0];
+        my $sth = $self->dbc->run(sub{
+            my $sth =$_->prepare("select s.screentiny as screentiny, s.screenname as screenname from screens s join users u on s.userid = u.userid where u.username = '$user'") 
+            or do {
+                $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+                return 0;
+            };
+            $sth->execute or do {
+                $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+                return 0;
+            };
+            $sth;
+        });
+        
+        while (my $ref=$sth->fetchrow_hashref()) {
+            push @data,{'tiny'=>$ref->{'screentiny'},'name'=>$ref->{'screenname'}};
+        }
+        $self->render(json => {"error"=>"0","error_str"=>"", "data" => \@data});
+        return 1;
+    }
+    else{
+        $self->render(json => {"error"=>"1","error_str"=>"Not authenticated yet"}); 
+    }
+}
+
+sub fetchbookmarks{
+    my $self = shift;
+    my @data;
+    if ($self->is_user_authenticated){
+        my $user = $self->user->[0];
+        my $sth = $self->dbc->run(sub{
+            my $sth =$_->prepare("
+              select b.bookmarkid as bookmarkid, b.screenid as screenid,
+              s.screenname as screenname, s.screentiny as screentiny, u2.username as screenowner
+              from bookmarks b
+              join users u1 on b.userid = u1.userid 
+              join screens s on s.screenid = b.screenid
+              join users u2 on s.userid = u2.userid 
+              where u1.username = '$user';") 
+            or do {
+                $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+                return 0;
+            };
+            $sth->execute or do {
+                $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+                return 0;
+            };
+            $sth;
+        });
+        
+        while (my $ref=$sth->fetchrow_hashref()) {
+            push @data,{'tiny'=>$ref->{'screentiny'},'name'=>$ref->{'screenname'},'owner'=>$ref->{'screenowner'},'bookmarkid'=>$ref->{'bookmarkid'}};
+        }
+        $self->render(json => {"error"=>"0","error_str"=>"", "data" => \@data});
+        return 1;
+    }
+    else{
+        $self->render(json => {"error"=>"1","error_str"=>"Not authenticated yet"}); 
+    }
+}
+
+sub isbookmarked(\$$){
+  my $self = shift;
+  my $id = shift;
+  if ($self->is_user_authenticated){
+    my $user = $self->user->[0];
+    my $sth = $self->dbc->run(sub{
+      my $sth =$_->prepare("
+        select b.bookmarkid as bookmarkid, b.screenid as screenid,
+        s.screenname as screenname, s.screentiny as screentiny, u2.username as screenowner
+        from bookmarks b
+        join users u1 on b.userid = u1.userid 
+        join screens s on s.screenid = b.screenid
+        join users u2 on s.userid = u2.userid 
+        where u1.username = '$user' and s.screentiny = '$id';") 
+      or do {
+          $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+          return 0;
+      };
+      $sth->execute or do {
+          $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+          return 0;
+      };
+      $sth;
+    });
+    if ($sth->rows==0) {
+      return 0;
+    }
+    else{
+      return 1;
+    }
+  }
+  else{
+        $self->render(json => {"error"=>"1","error_str"=>"Not authenticated yet"}); 
+  }
+}
+
+sub checkbookmarked{
+  my $self = shift;
+  my $id = $self->stash( 'id' );
+  if ($id eq "none") {
+    return $self->render(json => {"error"=>"0","error_str"=>"","bookmarked"=>"2","reason"=>"New screen?"}); 
+  }
+  
+  if ($id !~ /^[a-zA-z0-9]{6}$/) {
+    return $self->render(json => {"error"=>"1","error_str"=>"Wrong screen id"}); 
+  }
+  if ($self->is_user_authenticated){
+    if ($self->isbookmarked($id)){
+      return $self->render(json => {"error"=>"0","error_str"=>"","bookmarked"=>"1","reason"=>"Already bookmarked"}); 
+    }
+    else{
+      return $self->render(json => {"error"=>"0","error_str"=>"","bookmarked"=>"0","reason"=>"Not bookmarked"}); 
+    }
+  }
+  else{
+    return $self->render(json => {"error"=>"0","error_str"=>"","bookmarked"=>"3","reason"=>"Not Authenticated"}); 
+  }
+}
+
+sub deletebookmark{
+  my $self = shift;
+  my $id = $self->stash( 'id' );
+  if ($id !~ /^\d+$/) {
+    return $self->render(json => {"error"=>"1","error_str"=>"Wrong screen id"}); 
+  }
+  if ($self->is_user_authenticated){
+
+      my $user = $self->user->[0];
+      my $sth = $self->dbc->run(sub{
+        my $sth =$_->prepare("delete from bookmarks 
+             where bookmarkid = '$id' and userid in (select userid from users where username ='$user')")
+        or do {
+          return $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+        };
+        $sth->execute or do {
+          return $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+        };
+        $sth;
+      });
+      if ($sth->rows==0) {
+	return $self->render(json => {"error"=>"1","error_str"=>"0 rows deleted. Is it your bookmark?"}); 
+      }
+      else{
+	return $self->render(json => {"error"=>"0","error_str"=>""}); 
+      }
+
+  }
+  else{
+    return $self->render(json => {"error"=>"1","error_str"=>"Not authorized"}); 
+  }
+  
+}
+
+sub bookmark{
+  my $self = shift;
+  my $id = $self->stash( 'id' );
+  if ($id !~ /^[a-zA-z0-9]{6}$/) {
+    return $self->render(json => {"error"=>"1","error_str"=>"Wrong screen id"}); 
+  }
+  if ($self->isbookmarked($id)){
+    return $self->render(json => {"error"=>"0","error_str"=>"","bookmarked"=>"0","reason"=>"Already bookmarked"}); 
+  }
+  else{
+    if ($self->is_user_authenticated){
+      my $user = $self->user->[0];
+      my $sth = $self->dbc->run(sub{
+        my $sth =$_->prepare("insert into bookmarks (screenid, userid)
+                             select s.screenid as screenid, u.userid as userid
+                             from screens s, users u
+                             where (s.screentiny = '$id' and u.username='$user')")
+        or do {
+          return $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+        };
+        $sth->execute or do {
+          return $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
+        };
+        $sth;
+      });
+      return $self->render(json => {"error"=>"0","error_str"=>"","bookmarked"=>"1","reason"=>"Successfully bookmarked"}); 
+    }
+    else{
+      return self->render(json => {"error"=>"1","error_str"=>"Not authenticated yet"}); 
+    }
+  }
 }
 
 1;

@@ -32,13 +32,15 @@
 		</div>
 		<div id="user_bar"><span id="user_welcome"></span>
 			<input class="btn" type="button" name="load_project" value="My projects">
+			<input class="btn" type="button" name="load_bookmarks" value="My bookmarks">
 			<input class="btn" type="button" name="logout" value="Logout">
 		</div>
 		<div id="project_list">
-			
+		</div>
+		<div id="bookmark_list">	
 		</div>
 		<div id="zabbix_server" class="btn-group">
-			<div id="graph_tname"></div>
+			<div id="graph_dname"><span id=graph_tname>New Graph</span><span id="bmspan" style="display:none"><input type="button" name="add_bookmark" value="Bookmark"></span></div>
 			Chose Zabbix server:
 % for my $zserver (@{$config->{zabbix}->{servers}}) {
 <input class="btn" type="button" name="zserver" value="<%= $zserver %>">
@@ -58,7 +60,7 @@
 				<div class="bar_name">Hosts:</div>
 				Host filter:<br><input type="text" name="host_filter_input"><span class="hide_disabled">Hide disabled<input type="checkbox" name="filter_disabled"></span><br>
 				<!--<input type="button" value="Go!" name="filter_button">-->
-				(case insensitive regex)
+				<span class="hint">(case insensitive regex)</span>
 				<div>
 				<select id="host_list" name="host_list" multiple="multiple" size="15"> 
 				</select><br>
@@ -75,7 +77,7 @@
 				Hide: disabled<input type="checkbox" name="filter_items_disabled">&nbsp;unsupported
 				<input type="checkbox" name="filter_items_unsupported">&nbsp;nodata<input type="checkbox" name="filter_items_nodata"></span><br>
 				<!--<input type="button" value="Go!" name="filter_button">-->
-				(case insensitive regex)
+				<span class="hint">(case insensitive regex)</span>
 				<div>
 				<select id="item_list" name="item_list" multiple="multiple" size="15"> 
 				</select>
