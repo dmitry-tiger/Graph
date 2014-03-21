@@ -23,6 +23,7 @@
 		<input id="screen_id" type="hidden" value="">
 		<input id="screen_type" type="hidden" value="view">
 		<input id="screen_name" type="hidden" value="">
+		<input id="domain" type="hidden" value="<%=$config->{zabbix}->{domain}%>">
 		<input id="onload" type="hidden" value="<%=$goonload%>">
 		<input id="maintenance_action" type="hidden" name="maintenance_action" value="">
 		<div id="user_auth">Signin
