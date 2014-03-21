@@ -107,7 +107,7 @@ $(document).ready(function() {
 		    $("#zauth_result").html(data);
 		    if (parseInt($("#zauth_result").html()) == 0 ) {
 			$("#zauth_result").removeClass("text-error").addClass("text-success");
-			$("#zauth_result").html("Zabbix authentication success, "+CurServer+" server selected");
+			$("#zauth_result").html("Zabbix authentication success, "+CurServer+$('#domain').val()+" server selected");
 		    }
 		    if (parseInt($("#zauth_result").html()) == 1 ) {
 		        $("#zauth_result").removeClass("text-success").addClass("text-error");
@@ -371,7 +371,7 @@ $(document).ready(function() {
 	    m='&name='+encodeURIComponent($('#graph_options').find("input[name=graph_name]").val());
 	}
 	//n="&calcfnc="+$("select[name=calc_fnc] :selected").val();
-	graph_url="http://"+CurServer+".ringcentral.com/zab_chart2.php?"+url_str+h+f+i+j+"&height="+d+"&width="+e+"&period="+g+"&graphtype="+k+l+m;
+	graph_url="http://"+CurServer+$('#domain').val()+"/zab_chart2.php?"+url_str+h+f+i+j+"&height="+d+"&width="+e+"&period="+g+"&graphtype="+k+l+m;
 	return graph_url;
     }
 	
