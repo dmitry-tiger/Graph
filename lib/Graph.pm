@@ -79,7 +79,7 @@ sub setup_routing {
       $r->post('/do/fork')->to('screen#fork');
       $r->post('/do/save')->to('screen#save');
       $r->post('/do/delete')->to('screen#delete');
-      $r->get('/zlogin/:server/')->to('screen#login');
+      $r->get('/zlogin/#server/')->to('screen#login');
       $r->post('/do/login')->to('auth#login');
       $r->get('/do/islogined')->to('auth#islogined');
       $r->get('/do/logout')->to('auth#dologout');
