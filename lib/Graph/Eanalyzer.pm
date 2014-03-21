@@ -81,7 +81,7 @@ sub gengraph{
     (my $zserver = $json->{'zserver'}) =~ m/^[\w-]+$/ or do {$self->render(json => {"error"=>"1","error_str"=>"zserver not specified or invalid"});return;};
     my @items = @{$json->{'data'}};
     foreach my $item (@items){
-        my $url="http://$zserver.".$self->stash->{config}->{zabbix}->{domain}.
+        my $url="http://$zserver".$self->stash->{config}->{zabbix}->{domain}.
         "//zab_chart2.php?itemid[]=$item&color[]=48995e&drawtype[]=0&".
         "legend=1&height=300&width=800&period=$timediff&graphtype=0&showtriggers=1&stime=$stime";
         push @urls,$url;

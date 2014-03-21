@@ -158,31 +158,31 @@ sub ajax_get_items_by_itemids{
   return $self->render(json => $hostList);  
 }
 
-sub login_to_zabbix{
-  my $self = shift;
-  my $zserver = shift || "";
-  my $zserverUrl = "http://$zserver.ringcentral.com/api_jsonrpc.php";
-#  $self->clog('info',"Trying to login to Zabbix server: $zserverUrl with user: $zabbixAuth->{user}");   
-  my $zabapi = Zabapi->new(server => $zserverUrl, verbosity => '0');
-  my $zabbixAuth = { user => $self->stash->{config}->{zabbix}->{username}, password => $self->stash->{config}->{zabbix}->{password}};
-  eval {
-  my $res =$zabapi->login($zabbixAuth);
-#  say $res;
-  };
-  if ($@) {
-    $self->render(json => {"error"=>"$@" });
-    return 0;
-  }
-  else
-  {
-    if (defined $zabapi->{cookie}) {
-      return $zabapi;
-    }
-    else {
-      return '-1';
-    }
-  }
-}
+#sub login_to_zabbix{
+#  my $self = shift;
+#  my $zserver = shift || "";
+#  my $zserverUrl = "http://$zserver.ringcentral.com/api_jsonrpc.php";
+##  $self->clog('info',"Trying to login to Zabbix server: $zserverUrl with user: $zabbixAuth->{user}");   
+#  my $zabapi = Zabapi->new(server => $zserverUrl, verbosity => '0');
+#  my $zabbixAuth = { user => $self->stash->{config}->{zabbix}->{username}, password => $self->stash->{config}->{zabbix}->{password}};
+#  eval {
+#  my $res =$zabapi->login($zabbixAuth);
+##  say $res;
+#  };
+#  if ($@) {
+#    $self->render(json => {"error"=>"$@" });
+#    return 0;
+#  }
+#  else
+#  {
+#    if (defined $zabapi->{cookie}) {
+#      return $zabapi;
+#    }
+#    else {
+#      return '-1';
+#    }
+#  }
+#}
 
 sub fork{
   my $self=shift;

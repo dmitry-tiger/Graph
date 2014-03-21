@@ -26,7 +26,7 @@ sub startup {
   $self->helper('zapilogin' => sub {
       my $self = shift;
       my $zserver = shift || "";
-      my $zserverUrl = "http://$zserver.".$self->stash->{config}->{zabbix}->{domain}."/api_jsonrpc.php";
+      my $zserverUrl = "http://".$zserver.$self->stash->{config}->{zabbix}->{domain}."/api_jsonrpc.php";
       my $zabapi = Zabapi->new(server => $zserverUrl, verbosity => '0');
       say $zserverUrl;
       my $zabbixAuth = { user => $self->stash->{config}->{zabbix}->{username}, password => $self->stash->{config}->{zabbix}->{password}};
