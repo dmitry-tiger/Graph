@@ -1,0 +1,32 @@
+{
+    general => {
+        tmp_file_path => "/tmp",
+        log_file => "/tmp/graph_tool.log",
+        cookie_secret => "MyCookie_secret"
+    },
+
+    db => {
+	host => "127.0.0.1",
+        name => "graph_db",
+        port => "3306",
+ 	user => "graph_user", 
+	pass => 'graph_pass',
+
+    },
+    
+    zabbix => {
+        servers => ["zabbix1","zabbix2","zabbix3"],
+	domain => ".example.com",
+        username => "zabbix_api_user",
+        password => "zabbix_api_password",
+        verbosity => "0",
+    },
+    
+    ldap => {
+        server => "127.0.0.1",
+        basedn => "OU=Users,OU=example,DC=example,DC=com",
+        binddn => "CN=graph_user,OU=Service Accounts,OU=example,DC=example,DC=com",
+        bindpw => "BindPassw0rd",
+        filter => "(&(objectClass=organizationalPerson)(objectClass=user)(sAMAccountName=%s))",
+    },
+}
