@@ -1,0 +1,6 @@
+A tool for making graphs/dashboards from several zabbix servers in one place.
+Inclide Zabbix event analyzer with graph creation.
+
+Only support LDAP authorization
+
+Save graps dashboards bookmarks in mysql database
