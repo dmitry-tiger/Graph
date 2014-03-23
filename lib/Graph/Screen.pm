@@ -6,8 +6,6 @@ use Mojo::Base 'Mojolicious::Controller';
 # This action will render a template
 sub newscreen {
   my $self = shift;
-
-  # Render template "example/welcome.html.ep" with message
   $self->render(msg => 'This is new screen');
 }
 
@@ -158,32 +156,6 @@ sub ajax_get_items_by_itemids{
   return $self->render(json => $hostList);  
 }
 
-#sub login_to_zabbix{
-#  my $self = shift;
-#  my $zserver = shift || "";
-#  my $zserverUrl = "http://$zserver.ringcentral.com/api_jsonrpc.php";
-##  $self->clog('info',"Trying to login to Zabbix server: $zserverUrl with user: $zabbixAuth->{user}");   
-#  my $zabapi = Zabapi->new(server => $zserverUrl, verbosity => '0');
-#  my $zabbixAuth = { user => $self->stash->{config}->{zabbix}->{username}, password => $self->stash->{config}->{zabbix}->{password}};
-#  eval {
-#  my $res =$zabapi->login($zabbixAuth);
-##  say $res;
-#  };
-#  if ($@) {
-#    $self->render(json => {"error"=>"$@" });
-#    return 0;
-#  }
-#  else
-#  {
-#    if (defined $zabapi->{cookie}) {
-#      return $zabapi;
-#    }
-#    else {
-#      return '-1';
-#    }
-#  }
-#}
-
 sub fork{
   my $self=shift;
   my $json = $self->req->json;
@@ -225,45 +197,33 @@ sub delete{
   my $json = $self->req->json;
   my $url = $json->{'screen_id'}||0;
   unless ($url){
-    $self->render(json => {"error"=>"1","error_str"=>"Screen id was empty" });
-    return 0;
+    return $self->render(json => {"error"=>"1","error_str"=>"Screen id was empty" });
   }
   if ($self->is_user_authenticated){
    $user = $self->user->[0];
-  }
-  my $sth = $self->dbc->run(sub{
-      my $sth=$_->prepare("select s.screenid as screenid, u.username as username from screens s join users u on s.userid = u.userid where s.screentiny = '$url'")
-      or do {
-        $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-      return 0;
-      };
-      $sth->execute or do {
-        $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-        return 0;
-      };
-      $sth;
-  });
-  my $ref = $sth->fetchrow_hashref();
-  my $user_name = $ref->{'username'};
-  unless ($user_name eq $user) {
-    $self->render(json => {"error"=>"1","error_str"=>"You don't have permission to detele this project" });
-    return 0;
+  } else {
+    return $self->render(json => {"error"=>"1","error_str"=>"Guests couldn't delete projects. Please log in." });
   }
   
-  my $screen_id = $ref->{'screenid'};
-  $sth = $self->dbc->run(sub{
-    my $sth = $_->prepare("delete from screens where screenid='$screen_id'")or do {
-      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-      return 0;
-    };
-    $sth->execute or do {
-      $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-      return 0;
-    };
-    $sth;
-  });
-  $self->render(json => {"error"=>"0","error_str"=>"" });
-  
+  # Get graph owner and screen_id
+  my $check_res = $self->dbd->get_graph_owner($url);
+  if ($check_res->{code}) {
+    # Check graph owner name
+    unless ($check_res->{'data'}->{'username'} eq $user) {
+      return $self->render(json => {"error"=>"1","error_str"=>"You don't have permission to detele this project" });
+    }
+  } else {
+    # Error in get graph owner
+    return $self->render(json => { error =>"1", error_str => $check_res->{error_msg} });
+  }
+
+  # Try to delete graph
+  my $res = $self->dbd->screen_delete($check_res->{'data'}->{'screenid'});
+  if ($res->{code}) {
+    return $self->render(json => { "error" => "0", "error_str" => "" });
+  } else {
+    return $self->render(json => { "error" => "1", "error_str" => $res->{error_msg} });
+  }
 }
 
 sub gen_tiny_url{
@@ -275,22 +235,19 @@ sub gen_tiny_url{
   $tiny=join "",map {$printable[rand(scalar @printable)]} 1..$len;
 #  my $mydbc = GraphDb->new();
 #  last if $mydbc->check_url($tiny,$self->db);
-  last if $self->check_url($tiny);
+  last if $self->dbd->check_url($tiny);
   }
   return $tiny;
 }
 
-sub check_url{
-    my $self=shift;
-    my $url=shift;
-#    $self->db->connect;
-    my $sth = $self->dbc->run(sub {
-      $_->do("select * from screens where screentiny = '$url'");
-    });
-    #my $res = $sth->execute;
-    $sth eq '0E0' ? return(1) : return(0);
-#    print $res;
-}
+#sub check_url{
+#    my $self=shift;
+#    my $url=shift;
+#    my $sth = $self->dbc->run(sub {
+#      $_->do("select * from screens where screentiny = '$url'");
+#    });
+#    $sth eq '0E0' ? return(1) : return(0);
+#}
 
 sub save_to_db{
   my $self=shift;

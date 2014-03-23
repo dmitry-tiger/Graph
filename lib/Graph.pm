@@ -2,6 +2,7 @@ package Graph;
 use Mojo::Base 'Mojolicious';
 use Zabapi;
 use DBIx::Connector;
+use Graph::GraphDb;
 
 has dbc => sub {
   my $self = shift;
@@ -15,6 +16,18 @@ has dbc => sub {
   return $connector;
 };
 
+has dbd => sub {
+  my $self = shift;
+  my $connector = Graph::GraphDb->new(
+    $self->{config}->{db}->{name},
+    $self->{config}->{db}->{host},
+    $self->{config}->{db}->{port},
+    $self->{config}->{db}->{user},
+    $self->{config}->{db}->{pass}
+    );
+  return $connector;
+};
+
 sub startup {
   my $self = shift;
   $self->setup_routing;
@@ -23,6 +36,7 @@ sub startup {
   $self->secret($self->{config}->{general}->{cookie_secret});
   $self->mode('production');
   $self->helper('dbc' => sub { return shift->app->dbc });
+  $self->helper('dbd' => sub { return shift->app->dbd });
   $self->helper('zapilogin' => sub {
       my $self = shift;
       my $zserver = shift || "";
