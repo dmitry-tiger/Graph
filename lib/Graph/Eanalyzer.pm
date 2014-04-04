@@ -11,7 +11,7 @@ sub new_ea{
 sub getevents{
     my $self=shift;
     my $json = $self->req->json;
-    (my $zserver = $json->{'zserver'}) =~ m/^[\w-]+$/ or do {$self->render(json => {"error"=>"1","error_str"=>"zserver not specified or invalid"});return;};
+    (my $zserver = $json->{'zserver'}) =~ m/^[\w-\.]+$/ or do {$self->render(json => {"error"=>"1","error_str"=>"zserver not specified or invalid"});return;};
     my @from_date = $json->{'from_date'} =~ m/^(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2})$/ or do {$self->render(json => {"error"=>"1","error_str"=>"from_date not specified or invalid"});return;};
     my @to_date = $json->{'to_date'} =~ m/^(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2})$/ or do {$self->render(json => {"error"=>"1","error_str"=>"to_date not specified or invalid"});return;};
     my $fdt = DateTime->new(
