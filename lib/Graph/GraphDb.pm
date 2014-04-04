@@ -60,16 +60,51 @@ sub screen_delete{
     my $self=shift;
     my $screen_id=shift;
     my $sth = $self->connector->run(sub{
-        my $sth = $_->prepare("delete from screens where screenid='$screen_id'")or do {
+        my $sth = $_->do("delete from screens where screenid='$screen_id'")or do {
           return { code => 0, error_msg =>"$DBI::errstr" };
         };
-        $sth->execute or do {
-          return { code => 0, error_msg =>"$DBI::errstr" };
-        };
-        $sth->finish();
         $sth;
     });
     return { code => 1 };
+}
+
+sub get_user{
+    my $self=shift;
+    my $user_name=shift;
+    my $sth = $self->connector->run(sub {
+      my $sth = $_->prepare("select userid from users where username = '$user_name'")
+      or do {
+        return { code => 0, error_msg =>"$DBI::errstr" };
+      };
+      $sth->execute or do {
+        return { code => 0, error_msg =>"$DBI::errstr" };
+      };
+      $sth;
+    });
+    if ($sth->rows) {
+        my $data = $sth->fetchrow_hashref();
+        $sth->finish();
+        return { code => 1, data => $data };
+    } else {
+        return { code => 2, error_msg =>"User not found" };
+    }
+    
+}
+
+sub create_user{
+    my $self=shift;
+    my $user_name=shift;
+    $sth = $self->connector->run(sub {
+        my $sth = $_->prepare("insert into users set `username` = '$user_name';")or do {
+            return { code => 0, error_msg =>"$DBI::errstr" };
+        };
+        $sth->execute or do {
+            return { code => 0, error_msg =>"$DBI::errstr" };
+        };
+        $sth;
+    });
+    my $userid = $sth->{mysql_insertid};
+    return { code => 1, userid => $userid };
 }
 
 1;

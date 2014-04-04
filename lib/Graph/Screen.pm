@@ -192,110 +192,84 @@ sub save{
 }
 
 sub delete{
-  my $self=shift;
-  my $user = 'quest';
-  my $json = $self->req->json;
-  my $url = $json->{'screen_id'}||0;
-  unless ($url){
-    return $self->render(json => {"error"=>"1","error_str"=>"Screen id was empty" });
-  }
-  if ($self->is_user_authenticated){
-   $user = $self->user->[0];
-  } else {
-    return $self->render(json => {"error"=>"1","error_str"=>"Guests couldn't delete projects. Please log in." });
-  }
-  
-  # Get graph owner and screen_id
-  my $check_res = $self->dbd->get_graph_owner($url);
-  if ($check_res->{code}) {
-    # Check graph owner name
-    unless ($check_res->{'data'}->{'username'} eq $user) {
-      return $self->render(json => {"error"=>"1","error_str"=>"You don't have permission to detele this project" });
+    my $self=shift;
+    my $user = 'quest';
+    my $json = $self->req->json;
+    my $url = $json->{'screen_id'}||0;
+    unless ($url){
+	return $self->render(json => {"error"=>"1","error_str"=>"Screen id was empty" });
     }
-  } else {
-    # Error in get graph owner
-    return $self->render(json => { error =>"1", error_str => $check_res->{error_msg} });
-  }
-
-  # Try to delete graph
-  my $res = $self->dbd->screen_delete($check_res->{'data'}->{'screenid'});
-  if ($res->{code}) {
-    return $self->render(json => { "error" => "0", "error_str" => "" });
-  } else {
-    return $self->render(json => { "error" => "1", "error_str" => $res->{error_msg} });
-  }
+    if ($self->is_user_authenticated){
+	$user = $self->user->[0];
+    } else {
+	return $self->render(json => {"error"=>"1","error_str"=>"Guests couldn't delete projects. Please log in." });
+    }
+    
+    # Get graph owner and screen_id
+    my $check_res = $self->dbd->get_graph_owner($url);
+    if ($check_res->{code}) {
+	# Check graph owner name
+	unless ($check_res->{'data'}->{'username'} eq $user) {
+	    return $self->render(json => {"error"=>"1","error_str"=>"You don't have permission to detele this project" });
+	}
+    } else {
+	# Error in get graph owner
+	return $self->render(json => { error =>"1", error_str => $check_res->{error_msg} });
+    }
+  
+    # Try to delete graph
+    my $res = $self->dbd->screen_delete($check_res->{'data'}->{'screenid'});
+    if ($res->{code}) {
+	return $self->render(json => { "error" => "0", "error_str" => "" });
+    } else {
+	return $self->render(json => { "error" => "1", "error_str" => $res->{error_msg} });
+    }
 }
 
 sub gen_tiny_url{
-  my $self=shift;
-  my $len=shift;
-  my $tiny="";
-  while (1) {
-  my @printable=('a'..'z','A'..'Z','0'..'9');
-  $tiny=join "",map {$printable[rand(scalar @printable)]} 1..$len;
-#  my $mydbc = GraphDb->new();
-#  last if $mydbc->check_url($tiny,$self->db);
-  last if $self->dbd->check_url($tiny);
-  }
-  return $tiny;
+    my $self=shift;
+    my $len=shift;
+    my $tiny="";
+    while (1) {
+	my @printable=('a'..'z','A'..'Z','0'..'9');
+	$tiny=join "",map {$printable[rand(scalar @printable)]} 1..$len;
+	last if $self->dbd->check_url($tiny);
+    }
+    return $tiny;
 }
 
-#sub check_url{
-#    my $self=shift;
-#    my $url=shift;
-#    my $sth = $self->dbc->run(sub {
-#      $_->do("select * from screens where screentiny = '$url'");
-#    });
-#    $sth eq '0E0' ? return(1) : return(0);
-#}
-
 sub save_to_db{
-  my $self=shift;
-  my $url=shift;
-  my $data=shift;
-  my $project_name=shift;
-  ###################
-  my $userid=1;
-  my $user='guest';
-  if ($self->is_user_authenticated){
-    $user = $self->user->[0];
-    my $sth = $self->dbc->run(sub {
-      my $sth = $_->prepare("select userid from users where username = '$user'")
-      or do {
-        $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-        return 0;
-      };
-      $sth->execute or do {
-        $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-        return 0;
-      };
-      $sth;
-    });
-    if ($sth->rows > 0){
-      my $ref = $sth->fetchrow_hashref();
-      $userid = $ref->{'userid'} or do {
-        $self->render(json => {"error"=>"1","error_str"=>"Unknown userid" });
-        return 0;
-      };
-    }
-    else{
-      $sth = $self->dbc->run(sub {
-        my $sth = $_->prepare("insert into users set `username` = '$user';")or do {
-          $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-          return 0;
-        };
-        $sth->execute or do {
-          $self->render(json => {"error"=>"1","error_str"=>"$DBI::errstr" });
-          return 0;
-        };
-        $sth;
-      });
-    $userid = $sth->{mysql_insertid};
-    }
+    my $self=shift;
+    my $url=shift;
+    my $data=shift;
+    my $project_name=shift;
+    ###################
+    my $userid=1;
+    my $user='guest';
+    if ($self->is_user_authenticated){
+	$user = $self->user->[0];
+	# Check if user exists
+	my $res = $self->dbd->get_user($user);
+	if ($res->{code} && $res->{code} == 1){
+	    # User exist
+	    $userid = $res->{data}->{'userid'} or do {
+		return $self->render(json => {"error"=>"1","error_str"=>"Unknown userid" });
+	    };
+	} elsif ($res->{code} && $res->{code} == 2) {
+	    # User not found
+	    my $res2 = $self->dbd->create_user($user);
+	    if ( $res2->{code} ) {
+		$userid = $res2->{userid};
+	    } else {
+		return $self->render(json => { error => "1", error_str => $res2->{error_msg} });
+	    }
+	} else {
+	    # Db error
+	    return $self->render(json => { error => "1", error_str => $res->{error_msg} });
+	}  
   }
   else{
-    $self->render(json => {"error"=>"1","error_str"=>"Guests couldn't save or fork projects. Please log in." });
-    return 0;
+    return $self->render(json => {"error"=>"1","error_str"=>"Guests couldn't save or fork projects. Please log in." });
   }
   ###################
   my $sth = $self->dbc->run(sub {
