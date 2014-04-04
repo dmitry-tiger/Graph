@@ -15,6 +15,7 @@
 <div id="main">
     <div id="header">
         	<div id="user_auth">Signin
+                        <input id="domain" type="hidden" value="<%=$config->{zabbix}->{domain}%>">
 			<input id="username" type="text" name="username" placeholder="Login">
 			<input id="password" type="password" name="password" placeholder="Password">
 			<input id="signin" class="btn" type="button" name="signin" value="Signin">
